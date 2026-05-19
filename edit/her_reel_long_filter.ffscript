@@ -1,0 +1,15 @@
+[0:v]trim=start=0:end=4.6,setpts=(PTS-STARTPTS)/1.03,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1188:2112:force_original_aspect_ratio=increase,crop=1080:1920:x='54+20*sin(t*5)':y='96+14*cos(t*3)',fps=30,eq=contrast=1.13:saturation=1.32:brightness=-0.012,unsharp=5:5:0.55:3:3:0.25,vignette=PI/4[v0];
+[0:a]atrim=start=0:end=4.6,asetpts=PTS-STARTPTS,atempo=1.03,afade=t=in:st=0:d=0.03,afade=t=out:st=4.436:d=0.03[a0];
+[0:v]trim=start=4.6:end=12.2,setpts=(PTS-STARTPTS)/1.08,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1210:2152:force_original_aspect_ratio=increase,crop=1080:1920:x='65+24*sin(t*6)':y='116+22*cos(t*4)',fps=30,eq=contrast=1.18:saturation=1.42:brightness=-0.016,unsharp=5:5:0.65:3:3:0.30,vignette=PI/4[v1];
+[0:a]atrim=start=4.6:end=12.2,asetpts=PTS-STARTPTS,atempo=1.08,afade=t=in:st=0:d=0.03,afade=t=out:st=7.007:d=0.03[a1];
+[0:v]trim=start=12.2:end=22.8,setpts=(PTS-STARTPTS)/1.08,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1200:2134:force_original_aspect_ratio=increase,crop=1080:1920:x='60+24*sin(t*5)':y='107+24*cos(t*5)',fps=30,eq=contrast=1.18:saturation=1.40:brightness=-0.016,unsharp=5:5:0.65:3:3:0.30,vignette=PI/4[v2];
+[0:a]atrim=start=12.2:end=22.8,asetpts=PTS-STARTPTS,atempo=1.08,afade=t=in:st=0:d=0.03,afade=t=out:st=9.785:d=0.03[a2];
+[0:v]trim=start=22.8:end=33.9,setpts=(PTS-STARTPTS)/1.08,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1220:2169:force_original_aspect_ratio=increase,crop=1080:1920:x='70+28*sin(t*6)':y='124+26*cos(t*4)',fps=30,eq=contrast=1.20:saturation=1.48:brightness=-0.018,unsharp=5:5:0.70:3:3:0.32,vignette=PI/4[v3];
+[0:a]atrim=start=22.8:end=33.9,asetpts=PTS-STARTPTS,atempo=1.08,afade=t=in:st=0:d=0.03,afade=t=out:st=10.248:d=0.03[a3];
+[0:v]trim=start=33.9:end=44.55,setpts=(PTS-STARTPTS)/1.05,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1230:2187:force_original_aspect_ratio=increase,crop=1080:1920:x='75+30*sin(t*7)':y='134+28*cos(t*5)',fps=30,eq=contrast=1.20:saturation=1.52:brightness=-0.02,unsharp=5:5:0.72:3:3:0.34,vignette=PI/4[v4];
+[0:a]atrim=start=33.9:end=44.55,asetpts=PTS-STARTPTS,atempo=1.05,afade=t=in:st=0:d=0.03,afade=t=out:st=10.113:d=0.03[a4];
+[v0][a0][v1][a1][v2][a2][v3][a3][v4][a4]concat=n=5:v=1:a=1[cv][ca];
+[cv]trim=start=0:end=41.8,setpts=PTS-STARTPTS,format=yuv420p[base];
+[1:v]trim=start=0:end=41.8,setpts=PTS-STARTPTS,format=rgba[ov];
+[base][ov]overlay=0:0:format=auto,format=yuv420p[outv];
+[ca]atrim=start=0:end=41.8,asetpts=PTS-STARTPTS,highpass=f=70,lowpass=f=15000,afftdn=nf=-24,agate=threshold=-38dB:ratio=3:attack=10:release=180,equalizer=f=950:t=q:w=1.0:g=-4,equalizer=f=2600:t=q:w=1.2:g=-4,bass=g=6:f=90,treble=g=2.5:f=7000,dynaudnorm=f=150:g=8,alimiter=limit=0.95[outa]

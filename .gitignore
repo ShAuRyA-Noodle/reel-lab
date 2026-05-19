@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.bun/
+.pnp
+.pnp.js
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+*.dylib
+dist-packages/
+*.egg-info/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Nested git backups
+.git_bak/
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+
+# Coverage
+coverage/

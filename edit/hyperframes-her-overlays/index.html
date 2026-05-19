@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: transparent;
+        font-family: Impact, Arial Black, system-ui, sans-serif;
+      }
+
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      .clip {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .meme {
+        max-width: 930px;
+        padding: 24px 34px;
+        color: #fff6d7;
+        font-size: 76px;
+        line-height: 0.92;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        text-shadow:
+          5px 5px 0 #090909,
+          -4px 4px 0 #090909,
+          0 0 28px rgba(255, 38, 116, 0.92);
+        transform-origin: center;
+        animation: slam 0.48s cubic-bezier(0.16, 1, 0.3, 1) both, wiggle 0.72s 0.5s ease-in-out infinite alternate;
+      }
+
+      .top {
+        top: 112px;
+        left: 54px;
+      }
+
+      .middle {
+        top: 1010px;
+        left: 54px;
+      }
+
+      .bottom {
+        left: 50%;
+        bottom: 160px;
+        transform: translateX(-50%);
+        text-align: center;
+      }
+
+      .tag {
+        padding: 18px 26px;
+        border: 5px solid #fff6d7;
+        border-radius: 28px;
+        color: #101010;
+        background: #ffea00;
+        font-size: 44px;
+        line-height: 1;
+        text-transform: uppercase;
+        box-shadow: 0 0 0 6px #101010, 0 0 40px rgba(255, 234, 0, 0.85);
+        animation: pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) both, pulse 0.42s 0.35s ease-in-out infinite alternate;
+      }
+
+      .tag-left {
+        left: 70px;
+        top: 760px;
+        rotate: -8deg;
+      }
+
+      .tag-right {
+        right: 62px;
+        top: 626px;
+        rotate: 9deg;
+      }
+
+      .meter {
+        left: 70px;
+        bottom: 58px;
+        width: 940px;
+        height: 86px;
+        padding: 12px;
+        border: 5px solid #fff;
+        border-radius: 999px;
+        background: rgba(10, 10, 10, 0.46);
+        box-shadow: 0 0 35px rgba(255, 31, 121, 0.8);
+      }
+
+      .meter::before {
+        content: "RIZZ METER";
+        position: absolute;
+        left: 30px;
+        top: -56px;
+        color: #fff;
+        font-size: 40px;
+        text-shadow: 3px 3px 0 #000;
+      }
+
+      .fill {
+        width: 100%;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #ff2d76, #ff9f1c, #fff200);
+        transform-origin: left center;
+        animation: fillUp 1.25s cubic-bezier(0.16, 1, 0.3, 1) both, hot 0.38s 1.25s infinite alternate;
+      }
+
+      .burst {
+        left: 50%;
+        top: 52%;
+        width: 760px;
+        height: 760px;
+        border: 18px solid rgba(255, 238, 0, 0.8);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        box-shadow: 0 0 52px rgba(255, 38, 116, 0.95), inset 0 0 38px rgba(255, 255, 255, 0.4);
+        animation: shock 0.9s ease-out both;
+      }
+
+      .flash {
+        inset: 0;
+        background: rgba(255, 255, 255, 0.72);
+        animation: flash 0.18s ease-out both;
+      }
+
+      .spark {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #fff200;
+        box-shadow: 0 0 18px #fff200, 0 0 44px #ff2d76;
+        animation: sparkle 0.72s ease-out infinite alternate;
+      }
+
+      .s1 { left: 165px; top: 470px; }
+      .s2 { right: 135px; top: 1070px; animation-delay: 0.18s; }
+      .s3 { left: 790px; top: 318px; animation-delay: 0.32s; }
+      .s4 { left: 160px; top: 1330px; animation-delay: 0.44s; }
+
+      @keyframes slam {
+        0% {
+          opacity: 0;
+          transform: scale(1.85) rotate(-7deg);
+          filter: blur(10px);
+        }
+        72% {
+          opacity: 1;
+          transform: scale(0.92) rotate(2deg);
+          filter: blur(0);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) rotate(0deg);
+        }
+      }
+
+      @keyframes pop {
+        0% { opacity: 0; transform: scale(0.2); }
+        80% { opacity: 1; transform: scale(1.12); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes wiggle {
+        from { translate: -6px 0; }
+        to { translate: 6px -4px; }
+      }
+
+      @keyframes pulse {
+        from { scale: 1; }
+        to { scale: 1.08; }
+      }
+
+      @keyframes fillUp {
+        from { transform: scaleX(0.04); }
+        to { transform: scaleX(1); }
+      }
+
+      @keyframes hot {
+        from { filter: saturate(1); }
+        to { filter: saturate(1.8) brightness(1.18); }
+      }
+
+      @keyframes shock {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
+        22% { opacity: 1; }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+      }
+
+      @keyframes flash {
+        from { opacity: 0.88; }
+        to { opacity: 0; }
+      }
+
+      @keyframes sparkle {
+        from { transform: scale(0.55); opacity: 0.28; }
+        to { transform: scale(1.5); opacity: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="her-overlays" data-start="0" data-duration="42" data-width="1080" data-height="1920">
+      <div id="flash-open" class="clip flash" data-start="0" data-duration="0.2" data-track-index="20"></div>
+      <div id="meme-pegs" class="clip meme top" data-start="0" data-duration="2.5" data-track-index="21">POV: TWO PEGS LATER</div>
+      <div id="tag-bar-mode" class="clip tag tag-right" data-start="2.35" data-duration="2.15" data-track-index="22">BAR MODE</div>
+      <div id="burst-chair" class="clip burst" data-start="4.55" data-duration="0.9" data-track-index="23"></div>
+      <div id="meme-chair" class="clip meme middle" data-start="4.65" data-duration="2.25" data-track-index="24">THE CHAIR SAW EVERYTHING</div>
+      <div id="tag-no-shame" class="clip tag tag-left" data-start="7.2" data-duration="2.4" data-track-index="25">NO SHAME</div>
+      <div id="meme-uncle" class="clip meme bottom" data-start="10.1" data-duration="2.65" data-track-index="26">UNCLE ENERGY: ILLEGAL</div>
+      <div id="burst-final" class="clip burst" data-start="12.85" data-duration="0.9" data-track-index="27"></div>
+      <div id="meme-final" class="clip meme top" data-start="13.0" data-duration="2.35" data-track-index="28">FINAL FORM UNLOCKED</div>
+      <div id="rizz-meter" class="clip meter" data-start="15.1" data-duration="2.65" data-track-index="29"><div class="fill"></div></div>
+      <div id="meme-stage-two" class="clip meme middle" data-start="18.9" data-duration="2.5" data-track-index="34">WHY IS HE SERVING</div>
+      <div id="tag-audience" class="clip tag tag-right" data-start="22.4" data-duration="2.2" data-track-index="35">ROOM: TRAUMATIZED</div>
+      <div id="burst-second" class="clip burst" data-start="25.25" data-duration="0.9" data-track-index="36"></div>
+      <div id="meme-hairflip" class="clip meme top" data-start="25.35" data-duration="2.55" data-track-index="37">HAIR FLIP BUDGET: ZERO</div>
+      <div id="tag-chair-2" class="clip tag tag-left" data-start="29.15" data-duration="2.35" data-track-index="38">CHAIR POV</div>
+      <div id="meme-last-warning" class="clip meme bottom" data-start="32.4" data-duration="2.55" data-track-index="39">THIS WAS NOT ON THE SYLLABUS</div>
+      <div id="burst-last" class="clip burst" data-start="36.05" data-duration="0.9" data-track-index="40"></div>
+      <div id="meme-outro" class="clip meme top" data-start="36.15" data-duration="2.5" data-track-index="41">SAVE HIM FROM HIMSELF</div>
+      <div id="final-rizz-meter" class="clip meter" data-start="39.05" data-duration="2.75" data-track-index="42"><div class="fill"></div></div>
+      <div id="spark-one" class="clip spark s1" data-start="1.2" data-duration="40.2" data-track-index="43"></div>
+      <div id="spark-two" class="clip spark s2" data-start="1.7" data-duration="39.7" data-track-index="44"></div>
+      <div id="spark-three" class="clip spark s3" data-start="2.1" data-duration="39.3" data-track-index="45"></div>
+      <div id="spark-four" class="clip spark s4" data-start="2.8" data-duration="38.6" data-track-index="46"></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["her-overlays"] = {
+        play: () => {},
+        pause: () => {},
+        seek: () => {},
+        totalTime: () => {},
+        time: () => 0,
+        duration: () => 42,
+        add: () => {},
+        paused: () => {},
+        set: () => {},
+        timeScale: () => {},
+      };
+    </script>
+  </body>
+</html>

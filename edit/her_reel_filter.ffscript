@@ -1,0 +1,13 @@
+[0:v]trim=start=0:end=4.6,setpts=(PTS-STARTPTS)/1.08,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1188:2112:force_original_aspect_ratio=increase,crop=1080:1920:x='54+24*sin(t*5)':y='96+18*cos(t*3)',fps=30,eq=contrast=1.15:saturation=1.35:brightness=-0.015,unsharp=5:5:0.60:3:3:0.30,vignette=PI/4[v0];
+[0:a]atrim=start=0:end=4.6,asetpts=PTS-STARTPTS,atempo=1.08,afade=t=in:st=0:d=0.03,afade=t=out:st=4.229:d=0.03[a0];
+[0:v]trim=start=5.5:end=12.2,setpts=(PTS-STARTPTS)/1.20,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1220:2169:force_original_aspect_ratio=increase,crop=1080:1920:x='70+30*sin(t*7)':y='124+28*cos(t*4)',fps=30,eq=contrast=1.22:saturation=1.48:brightness=-0.02,unsharp=5:5:0.72:3:3:0.35,vignette=PI/4[v1];
+[0:a]atrim=start=5.5:end=12.2,asetpts=PTS-STARTPTS,atempo=1.20,afade=t=in:st=0:d=0.03,afade=t=out:st=5.553:d=0.03[a1];
+[0:v]trim=start=15.0:end=22.8,setpts=(PTS-STARTPTS)/1.22,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1200:2134:force_original_aspect_ratio=increase,crop=1080:1920:x='60+28*sin(t*6)':y='107+30*cos(t*5)',fps=30,eq=contrast=1.20:saturation=1.42:brightness=-0.018,unsharp=5:5:0.70:3:3:0.32,vignette=PI/4[v2];
+[0:a]atrim=start=15.0:end=22.8,asetpts=PTS-STARTPTS,atempo=1.22,afade=t=in:st=0:d=0.03,afade=t=out:st=6.363:d=0.03[a2];
+[0:v]trim=start=31.0:end=33.9,setpts=(PTS-STARTPTS)/1.18,setparams=color_trc=bt2020-10:color_primaries=bt2020:colorspace=bt2020nc,colorspace=all=bt709:format=yuv420p,scale=1240:2205:force_original_aspect_ratio=increase,crop=1080:1920:x='80+36*sin(t*8)':y='142+34*cos(t*6)',fps=30,eq=contrast=1.25:saturation=1.58:brightness=-0.025,unsharp=5:5:0.78:3:3:0.35,vignette=PI/4[v3];
+[0:a]atrim=start=31.0:end=33.9,asetpts=PTS-STARTPTS,atempo=1.18,afade=t=in:st=0:d=0.03,afade=t=out:st=2.428:d=0.03[a3];
+[v0][a0][v1][a1][v2][a2][v3][a3]concat=n=4:v=1:a=1[cv][ca];
+[cv]trim=start=0:end=18,setpts=PTS-STARTPTS,format=yuv420p[base];
+[1:v]trim=start=0:end=18,setpts=PTS-STARTPTS,format=yuva420p[ov];
+[base][ov]overlay=0:0:format=auto,format=yuv420p[outv];
+[ca]atrim=start=0:end=18,asetpts=PTS-STARTPTS,acompressor=threshold=-18dB:ratio=3:attack=8:release=120,bass=g=8:f=80,treble=g=3:f=6000,alimiter=limit=0.95[outa]
