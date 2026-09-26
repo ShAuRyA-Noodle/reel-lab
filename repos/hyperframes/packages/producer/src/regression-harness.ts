@@ -270,8 +270,8 @@ function validateMetadata(meta: unknown): TestMetadata {
   ) {
     throw new Error("meta.json: 'minAudioCorrelation' must be between 0 and 1");
   }
-  if (typeof m.maxAudioLagWindows !== "number" || m.maxAudioLagWindows < 1) {
-    throw new Error("meta.json: 'maxAudioLagWindows' must be >= 1");
+  if (typeof m.maxAudioLagWindows !== "number" || m.maxAudioLagWindows < 0) {
+    throw new Error("meta.json: 'maxAudioLagWindows' must be >= 0");
   }
   if (
     m.maxAudioResidualRmsDb !== undefined &&

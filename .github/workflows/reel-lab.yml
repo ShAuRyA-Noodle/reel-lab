@@ -13,6 +13,8 @@ on:
       - "repos/video-use/**"
       - ".github/workflows/reel-lab.yml"
   workflow_dispatch:
+  schedule:
+    - cron: "30 22 * * 0" # Monday 04:00 Asia/Kolkata; audit/build/tests on main
 
 permissions:
   contents: read
@@ -50,6 +52,7 @@ jobs:
   producer-render:
     name: H.264 producer render
     needs: hyperframes
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -75,6 +78,7 @@ jobs:
   producer-composition-fixture:
     name: Restored producer golden (${{ matrix.fixture }})
     needs: hyperframes
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -124,8 +128,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          bunx puppeteer browsers install chrome-headless-shell@stable
-          bun run --cwd packages/producer test '${{ matrix.fixture }}' --sequential
+          # Pin the browser for reproducible comparisons with committed goldens.
+          # Chrome 154 changes scene-boundary frames in existing fixtures.
+          bunx puppeteer browsers install chrome-headless-shell@148.0.7778.97
+          export PRODUCER_HEADLESS_SHELL_PATH="$HOME/.cache/puppeteer/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell"
+          test -x "$PRODUCER_HEADLESS_SHELL_PATH"
+          bun run --cwd packages/producer test '${{ matrix.fixture }}' --sequential --keep-temp
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: producer-failure-${{ matrix.fixture }}
+          path: |
+            repos/hyperframes/packages/producer/tests/${{ matrix.fixture }}/failures/
+            /tmp/hyperframes-tests/${{ matrix.fixture }}/output.mp4
+          if-no-files-found: warn
 
   video-use:
     name: Python lock and import
