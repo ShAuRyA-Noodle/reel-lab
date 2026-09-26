@@ -58,7 +58,7 @@
         "hyperframes": "./dist/cli.js",
       },
       "dependencies": {
-        "@hono/node-server": "^1.8.0",
+        "@hono/node-server": "^2.1.1",
         "@puppeteer/browsers": "^3.2.3",
         "adm-zip": "^0.6.1",
         "citty": "^0.2.1",
@@ -125,7 +125,7 @@
       "name": "@hyperframes/engine",
       "version": "0.6.15",
       "dependencies": {
-        "@hono/node-server": "^1.13.0",
+        "@hono/node-server": "^2.1.1",
         "@hyperframes/core": "workspace:^",
         "hono": "^4.6.0",
         "linkedom": "^0.18.12",
@@ -166,7 +166,7 @@
         "@fontsource/oswald": "^5.2.8",
         "@fontsource/outfit": "^5.2.8",
         "@fontsource/space-mono": "^5.2.9",
-        "@hono/node-server": "^1.13.0",
+        "@hono/node-server": "^2.1.1",
         "@hyperframes/core": "workspace:^",
         "@hyperframes/engine": "workspace:^",
         "hono": "^4.6.0",

@@ -24,7 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hono/node-server": "^1.8.0",
+    "@hono/node-server": "^2.1.1",
     "@puppeteer/browsers": "^3.2.3",
     "adm-zip": "^0.6.1",
     "citty": "^0.2.1",
