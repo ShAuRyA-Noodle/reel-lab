@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   hyperframes:
-    name: Moderate+ audit, build and render smoke
+    name: Moderate+ audit, lint, build and unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
@@ -46,6 +46,25 @@ jobs:
       - run: bun run --filter @hyperframes/studio test
       - run: bun run --filter @hyperframes/shader-transitions test
       - run: bun run --filter @hyperframes/aws-lambda test
+
+  producer-render:
+    name: H.264 producer render
+    needs: hyperframes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: repos/hyperframes
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - run: bun install --frozen-lockfile
+      - run: bun run build
       - name: Render H.264 smoke fixture
         run: |
           sudo apt-get update
