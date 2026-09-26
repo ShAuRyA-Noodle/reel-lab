@@ -72,6 +72,31 @@ jobs:
           bunx puppeteer browsers install chrome-headless-shell@stable
           bun run --cwd packages/producer test mp4-h264-sdr --sequential
 
+  producer-composition-fixture:
+    name: Restored producer composition golden
+    needs: hyperframes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: repos/hyperframes
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Compare style-7-prod video and audio to the golden fixture
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          bunx puppeteer browsers install chrome-headless-shell@stable
+          bun run --cwd packages/producer test style-7-prod --sequential
+
   video-use:
     name: Python lock and import
     runs-on: ubuntu-latest
