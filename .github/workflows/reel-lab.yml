@@ -73,10 +73,40 @@ jobs:
           bun run --cwd packages/producer test mp4-h264-sdr --sequential
 
   producer-composition-fixture:
-    name: Restored producer composition golden
+    name: Restored producer golden (${{ matrix.fixture }})
     needs: hyperframes
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        fixture:
+          - chat
+          - css-import-scoping
+          - dogs-captions
+          - heygen-promo-preview-assets
+          - missing-host-comp-id
+          - overlay-montage-prod
+          - style-1-prod
+          - style-2-prod
+          - style-3-prod
+          - style-4-prod
+          - style-5-prod
+          - style-6-prod
+          - style-7-prod
+          - style-8-prod
+          - style-9-prod
+          - style-10-prod
+          - style-11-prod
+          - style-12-prod
+          - style-13-prod
+          - style-15-prod
+          - style-16-prod
+          - style-17-prod
+          - style-18-prod
+          - sub-composition-video
+          - vignelli-stacking
     defaults:
       run:
         working-directory: repos/hyperframes
@@ -90,12 +120,12 @@ jobs:
           node-version: "22"
       - run: bun install --frozen-lockfile
       - run: bun run build
-      - name: Compare style-7-prod video and audio to the golden fixture
+      - name: Compare video and audio to the golden fixture
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           bunx puppeteer browsers install chrome-headless-shell@stable
-          bun run --cwd packages/producer test style-7-prod --sequential
+          bun run --cwd packages/producer test '${{ matrix.fixture }}' --sequential
 
   video-use:
     name: Python lock and import
