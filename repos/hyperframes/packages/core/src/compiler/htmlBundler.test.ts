@@ -265,7 +265,9 @@ describe("bundleToSingleHtml", () => {
     const bundled = await bundleToSingleHtml(dir);
 
     // Template element should be removed
-    expect(bundled).not.toContain("<template");
+    // The inlined runtime can itself contain this text inside JavaScript strings.
+    const { document } = parseHTML(bundled);
+    expect(document.querySelector("template")).toBeNull();
 
     // Host should contain the template content (the logo div)
     expect(bundled).toContain("Logo Here");
