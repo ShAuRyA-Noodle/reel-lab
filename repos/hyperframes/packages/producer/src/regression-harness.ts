@@ -515,7 +515,9 @@ function psnrAtCheckpoint(
   checkpointSec: number,
   fps: number,
 ): number {
-  const frameIndex = Math.max(0, Math.round(checkpointSec * fps));
+  // Frame timestamps mark the start of each frame. Rounding can select the
+  // next frame, including an out-of-range frame at the end of a short video.
+  const frameIndex = Math.max(0, Math.floor(checkpointSec * fps));
   const filter = `[0:v]select='eq(n\\,${frameIndex})',setpts=PTS-STARTPTS[rv];[1:v]select='eq(n\\,${frameIndex})',setpts=PTS-STARTPTS[gv];[rv][gv]psnr`;
   const args = [
     "-hide_banner",
