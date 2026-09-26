@@ -514,10 +514,15 @@ function psnrAtCheckpoint(
   snapshotVideo: string,
   checkpointSec: number,
   fps: number,
+  lastCommonFrameIndex: number,
 ): number {
-  // Frame timestamps mark the start of each frame. Rounding can select the
-  // next frame, including an out-of-range frame at the end of a short video.
-  const frameIndex = Math.max(0, Math.floor(checkpointSec * fps));
+  // The nearest frame gives stable comparisons at scene transitions. At the
+  // final checkpoint it can round past the last encoded frame, so bound it by
+  // the common video duration before selecting from either stream.
+  const frameIndex = Math.max(
+    0,
+    Math.min(Math.round(checkpointSec * fps), lastCommonFrameIndex),
+  );
   const filter = `[0:v]select='eq(n\\,${frameIndex})',setpts=PTS-STARTPTS[rv];[1:v]select='eq(n\\,${frameIndex})',setpts=PTS-STARTPTS[gv];[rv][gv]psnr`;
   const args = [
     "-hide_banner",
@@ -1058,6 +1063,8 @@ async function runTestSuite(
         videoMetadata.durationSeconds,
         snapshotMetadata.durationSeconds,
       );
+      const fps = fpsToNumber(suite.meta.renderConfig.fps);
+      const lastCommonFrameIndex = Math.max(0, Math.round(videoDuration * fps) - 1);
 
       const minPsnrForMode = resolveMinPsnrForMode(options.mode, suite.meta.minPsnr);
       for (let i = 0; i < 100; i++) {
@@ -1066,7 +1073,8 @@ async function runTestSuite(
           renderedOutputPath,
           snapshotVideoPath,
           time,
-          fpsToNumber(suite.meta.renderConfig.fps),
+          fps,
+          lastCommonFrameIndex,
         );
         visualCheckpoints.push({
           time,
