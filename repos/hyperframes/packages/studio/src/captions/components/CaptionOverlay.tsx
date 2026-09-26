@@ -29,15 +29,12 @@ function syncToStore(segmentId: string, el: HTMLElement, iframeWin: Window) {
 
 export const CaptionOverlay = memo(function CaptionOverlay({ iframeRef }: CaptionOverlayProps) {
   const isEditMode = useCaptionStore((s) => s.isEditMode);
-  const model = useCaptionStore((s) => s.model);
   const selectedSegmentIds = useCaptionStore((s) => s.selectedSegmentIds);
   const selectSegment = useCaptionStore((s) => s.selectSegment);
   const clearSelection = useCaptionStore((s) => s.clearSelection);
 
   const [wordBoxes, setWordBoxes] = useState<WordBox[]>([]);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const modelRef = useRef(model);
-  modelRef.current = model;
 
   // Interaction mode — only one active at a time
   const interactionRef = useRef<
@@ -81,7 +78,7 @@ export const CaptionOverlay = memo(function CaptionOverlay({ iframeRef }: Captio
     let prevBoxes: WordBox[] = [];
     const tick = () => {
       const iframe = iframeRef.current;
-      const m = modelRef.current;
+      const m = useCaptionStore.getState().model;
       const overlay = overlayRef.current;
       if (!iframe || !m || !overlay) return;
       const next = readWordBoxes(iframe, m, overlay);

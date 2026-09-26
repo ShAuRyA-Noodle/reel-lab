@@ -1,0 +1,159 @@
+name: Reel Lab verification
+
+on:
+  pull_request:
+    paths:
+      - "repos/hyperframes/**"
+      - "repos/video-use/**"
+      - ".github/workflows/reel-lab.yml"
+  push:
+    branches: [main]
+    paths:
+      - "repos/hyperframes/**"
+      - "repos/video-use/**"
+      - ".github/workflows/reel-lab.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "30 22 * * 0" # Monday 04:00 Asia/Kolkata; audit/build/tests on main
+
+permissions:
+  contents: read
+
+jobs:
+  hyperframes:
+    name: Audit, lint, build and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: repos/hyperframes
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - run: bun install --frozen-lockfile
+      - name: Audit all findings
+        run: bun audit
+      - run: bun run build
+      - run: bun run --filter '*' typecheck
+      - run: bun run lint
+      - run: bun run --filter @hyperframes/core test
+      - run: bun run --filter @hyperframes/engine test
+      - run: bun run --filter @hyperframes/player test
+      - run: bun run --filter @hyperframes/cli test
+      - run: bun run --filter @hyperframes/studio test
+      - run: bun run --filter @hyperframes/shader-transitions test
+      - run: bun run --filter @hyperframes/aws-lambda test
+
+  producer-render:
+    name: H.264 producer render
+    needs: hyperframes
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: repos/hyperframes
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Render H.264 smoke fixture
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          bunx puppeteer browsers install chrome-headless-shell@stable
+          bun run --cwd packages/producer test mp4-h264-sdr --sequential
+
+  producer-composition-fixture:
+    name: Restored producer golden (${{ matrix.fixture }})
+    needs: hyperframes
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    # dogs-captions renders 144 seconds of video and compares 100 decoded
+    # checkpoints; GitHub canceled it at 80/100 under the previous 30m cap.
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        fixture:
+          - chat
+          - css-import-scoping
+          - dogs-captions
+          - heygen-promo-preview-assets
+          - missing-host-comp-id
+          - overlay-montage-prod
+          - style-1-prod
+          - style-2-prod
+          - style-3-prod
+          - style-4-prod
+          - style-5-prod
+          - style-6-prod
+          - style-7-prod
+          - style-8-prod
+          - style-9-prod
+          - style-10-prod
+          - style-11-prod
+          - style-12-prod
+          - style-13-prod
+          - style-15-prod
+          - style-16-prod
+          - style-17-prod
+          - style-18-prod
+          - sub-composition-video
+          - vignelli-stacking
+    defaults:
+      run:
+        working-directory: repos/hyperframes
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          lfs: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Compare video and audio to the golden fixture
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          # Pin the browser for reproducible comparisons with committed goldens.
+          # Chrome 154 changes scene-boundary frames in existing fixtures.
+          bunx puppeteer browsers install chrome-headless-shell@148.0.7778.97
+          export PRODUCER_HEADLESS_SHELL_PATH="$HOME/.cache/puppeteer/chrome-headless-shell/linux-148.0.7778.97/chrome-headless-shell-linux64/chrome-headless-shell"
+          test -x "$PRODUCER_HEADLESS_SHELL_PATH"
+          bun run --cwd packages/producer test '${{ matrix.fixture }}' --sequential --keep-temp
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: producer-failure-${{ matrix.fixture }}
+          path: |
+            repos/hyperframes/packages/producer/tests/${{ matrix.fixture }}/failures/
+            /tmp/hyperframes-tests/${{ matrix.fixture }}/output.mp4
+          if-no-files-found: warn
+
+  video-use:
+    name: Python lock and import
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: repos/video-use
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@887a942a15af3a7626099df99e897a18d9e5ab3a # v6
+      - run: uv sync --locked
+      - run: uv run python -c "from PIL import Image; print(Image.__version__)"

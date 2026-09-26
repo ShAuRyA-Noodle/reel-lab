@@ -103,9 +103,9 @@ describe("HyperframesPlayer parent-frame media", () => {
       load: vi.fn(),
     };
 
-    vi.spyOn(globalThis, "Audio").mockImplementation(
-      () => mockAudio as unknown as HTMLAudioElement,
-    );
+    vi.spyOn(globalThis, "Audio").mockImplementation(function () {
+      return mockAudio as unknown as HTMLAudioElement;
+    });
 
     player = document.createElement("hyperframes-player") as PlayerElement;
   });
@@ -679,9 +679,9 @@ describe("HyperframesPlayer parent-proxy time-mirror coalescing", () => {
       pause: vi.fn(),
       load: vi.fn(),
     };
-    vi.spyOn(globalThis, "Audio").mockImplementation(
-      () => mockAudio as unknown as HTMLAudioElement,
-    );
+    vi.spyOn(globalThis, "Audio").mockImplementation(function () {
+      return mockAudio as unknown as HTMLAudioElement;
+    });
 
     const fresh = document.createElement("hyperframes-player") as PlayerInternal;
     fresh.setAttribute("audio-src", "https://cdn.example.com/narration.mp3");
@@ -1350,9 +1350,9 @@ describe("HyperframesPlayer volume and mute", () => {
       play: vi.fn().mockResolvedValue(undefined),
       pause: vi.fn(),
     };
-    vi.spyOn(globalThis, "Audio").mockImplementation(
-      () => mockAudio as unknown as HTMLAudioElement,
-    );
+    vi.spyOn(globalThis, "Audio").mockImplementation(function () {
+      return mockAudio as unknown as HTMLAudioElement;
+    });
 
     player = document.createElement("hyperframes-player") as typeof player;
   });

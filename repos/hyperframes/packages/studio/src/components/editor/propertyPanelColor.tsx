@@ -131,6 +131,13 @@ export function ColorField({
   const [panelPosition, setPanelPosition] = useState<FloatingPosition | null>(null);
   const [draftColor, setDraftColor] = useState<ParsedColor>(() => colorFromCss(value));
   const [hexDraft, setHexDraft] = useState(() => toHexColor(colorFromCss(value)).toUpperCase());
+  const [previousValue, setPreviousValue] = useState(value);
+  if (previousValue !== value) {
+    const nextColor = colorFromCss(value);
+    setPreviousValue(value);
+    setDraftColor(nextColor);
+    setHexDraft(toHexColor(nextColor).toUpperCase());
+  }
   const hsv = rgbToHsv(draftColor);
   const hueColor = formatCssColor({
     ...hsvToRgb({ hue: hsv.hue, saturation: 1, value: 1 }),
@@ -141,12 +148,6 @@ export function ColorField({
   const saturationPercent = Math.round(hsv.saturation * 100);
   const brightnessPercent = Math.round(hsv.value * 100);
   const alphaPercent = Math.round(draftColor.alpha * 100);
-
-  useEffect(() => {
-    const nextColor = colorFromCss(value);
-    setDraftColor(nextColor);
-    setHexDraft(toHexColor(nextColor).toUpperCase());
-  }, [value]);
 
   const updatePanelPosition = useCallback(() => {
     const anchor = buttonRef.current?.getBoundingClientRect();

@@ -48,11 +48,11 @@ import {
 
 export function StudioApp() {
   const { projectId, resolving, waitingForServer } = useServerConnection();
-  const initialUrlStateRef = useRef(readStudioUrlStateFromWindow());
+  const [initialUrlState] = useState(readStudioUrlStateFromWindow);
 
   const [activeCompPath, setActiveCompPath] = useState<string | null>(null);
   const [activeCompPathHydrated, setActiveCompPathHydrated] = useState(
-    () => initialUrlStateRef.current.activeCompPath == null,
+    () => initialUrlState.activeCompPath == null,
   );
   const [compIdToSrc, setCompIdToSrc] = useState<Map<string, string>>(new Map());
   const [previewIframe, setPreviewIframe] = useState<HTMLIFrameElement | null>(null);
@@ -62,7 +62,9 @@ export function StudioApp() {
 
   const previewIframeRef = useRef<HTMLIFrameElement | null>(null);
   const activeCompPathRef = useRef(activeCompPath);
-  activeCompPathRef.current = activeCompPath;
+  useEffect(() => {
+    activeCompPathRef.current = activeCompPath;
+  }, [activeCompPath]);
   const leftSidebarRef = useRef<LeftSidebarHandle>(null);
   const renderQueue = useRenderQueue(projectId);
   const captionEditMode = useCaptionStore((s) => s.isEditMode);
@@ -91,10 +93,7 @@ export function StudioApp() {
   }, []);
 
   const [timelineVisible, setTimelineVisible] = useState(
-    () =>
-      initialUrlStateRef.current.timelineVisible ??
-      readStudioUiPreferences().timelineVisible ??
-      true,
+    () => initialUrlState.timelineVisible ?? readStudioUiPreferences().timelineVisible ?? true,
   );
   const toggleTimelineVisibility = useCallback(() => {
     setTimelineVisible((v) => {
@@ -104,8 +103,8 @@ export function StudioApp() {
   }, []);
   const { appToast, showToast } = useToast();
   const panelLayout = usePanelLayout({
-    rightCollapsed: initialUrlStateRef.current.rightCollapsed,
-    rightPanelTab: initialUrlStateRef.current.rightPanelTab,
+    rightCollapsed: initialUrlState.rightCollapsed,
+    rightPanelTab: initialUrlState.rightPanelTab,
   });
   const editHistory = usePersistentEditHistory({ projectId });
   const domEditSaveTimestampRef = useRef(0);
@@ -125,17 +124,14 @@ export function StudioApp() {
     setRefreshKey,
   });
 
-  useEffect(() => {
-    if (activeCompPathHydrated) return;
-    if (!fileManager.fileTreeLoaded) return;
-
+  if (!activeCompPathHydrated && fileManager.fileTreeLoaded) {
     const nextCompPath = normalizeStudioCompositionPath(
-      initialUrlStateRef.current.activeCompPath,
+      initialUrlState.activeCompPath,
       fileManager.fileTree,
     );
     setActiveCompPath((current) => (current === nextCompPath ? current : nextCompPath));
     setActiveCompPathHydrated(true);
-  }, [activeCompPathHydrated, fileManager.fileTree, fileManager.fileTreeLoaded]);
+  }
 
   const manifestPersistence = useManifestPersistence({
     projectId,
@@ -236,9 +232,11 @@ export function StudioApp() {
     selectSidebarTab: (tab: SidebarTab) => leftSidebarRef.current?.selectTab(tab),
   });
 
-  domEditSelectionBridgeRef.current = domEditSession.domEditSelection;
-  clearDomSelectionRef.current = domEditSession.clearDomSelection;
-  handleDomEditElementDeleteRef.current = domEditSession.handleDomEditElementDelete;
+  useEffect(() => {
+    domEditSelectionBridgeRef.current = domEditSession.domEditSelection;
+    clearDomSelectionRef.current = domEditSession.clearDomSelection;
+    handleDomEditElementDeleteRef.current = domEditSession.handleDomEditElementDelete;
+  }, [domEditSession]);
 
   useCaptionDetection({
     projectId,
@@ -339,7 +337,7 @@ export function StudioApp() {
     domEditSelection: domEditSession.domEditSelection,
     buildDomSelectionFromTarget: domEditSession.buildDomSelectionFromTarget,
     applyDomSelection: domEditSession.applyDomSelection,
-    initialState: initialUrlStateRef.current,
+    initialState: initialUrlState,
   });
 
   // StudioProvider performs its own useMemo — no need for a second memo here.

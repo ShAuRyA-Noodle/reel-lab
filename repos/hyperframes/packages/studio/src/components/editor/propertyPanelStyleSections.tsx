@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Eye, Layers, Palette, Settings, Square, Zap } from "../../icons/SystemIcons";
 import { buildDefaultGradientModel, serializeGradient } from "./gradientValue";
 import { isTextEditableSelection, type DomEditSelection } from "./domEditing";
@@ -85,15 +85,22 @@ export function StyleSections({
         ? "Gradient"
         : "Image"
       : "Solid";
-  const [preferredFillMode, setPreferredFillMode] = useState(fillMode);
+  const externalFillKey = `${element.id ?? ""}:${element.selector ?? ""}:${backgroundImage}`;
+  const [fillPreference, setFillPreference] = useState({
+    externalFillKey,
+    preferredFillMode: fillMode,
+  });
+  if (fillPreference.externalFillKey !== externalFillKey) {
+    setFillPreference({ externalFillKey, preferredFillMode: fillMode });
+  }
+  const preferredFillMode =
+    fillPreference.externalFillKey === externalFillKey
+      ? fillPreference.preferredFillMode
+      : fillMode;
   const imageUrl = extractBackgroundImageUrl(backgroundImage);
 
-  useEffect(() => {
-    setPreferredFillMode(fillMode);
-  }, [fillMode, element.id, element.selector, backgroundImage]);
-
   const handleFillModeChange = (nextMode: string) => {
-    setPreferredFillMode(nextMode);
+    setFillPreference({ externalFillKey, preferredFillMode: nextMode });
     if (nextMode === "Solid") {
       onSetStyle("background-image", "none");
       return;

@@ -6,7 +6,7 @@
  * and iframe listener setup function. Has no side effects of its own.
  */
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { useCaptionStore } from "../../captions/store";
 import { shouldIgnorePlaybackShortcutEvent, SHUTTLE_SPEEDS } from "../lib/playbackShortcuts";
 import { usePlayerStore } from "../store/playerStore";
@@ -164,8 +164,10 @@ export function usePlaybackKeyboard({
     pressedKeysRef.current.delete(e.key.toLowerCase());
   }, []);
 
-  playbackKeyDownRef.current = handlePlaybackKeyDown;
-  playbackKeyUpRef.current = handlePlaybackKeyUp;
+  useEffect(() => {
+    playbackKeyDownRef.current = handlePlaybackKeyDown;
+    playbackKeyUpRef.current = handlePlaybackKeyUp;
+  }, [handlePlaybackKeyDown, handlePlaybackKeyUp]);
 
   const attachIframeShortcutListeners = useCallback(() => {
     iframeShortcutCleanupRef.current?.();

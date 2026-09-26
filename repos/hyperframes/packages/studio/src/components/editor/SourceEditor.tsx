@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, memo } from "react";
+import { useRef, useCallback, useEffect, useLayoutEffect, memo } from "react";
 import {
   EditorView,
   keymap,
@@ -69,10 +69,11 @@ export const SourceEditor = memo(function SourceEditor({
   const editorRef = useRef<EditorView | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
-
   const contentRef = useRef(content);
-  contentRef.current = content;
+  useLayoutEffect(() => {
+    onChangeRef.current = onChange;
+    contentRef.current = content;
+  }, [onChange, content]);
 
   const mountEditor = useCallback(
     (node: HTMLDivElement | null) => {

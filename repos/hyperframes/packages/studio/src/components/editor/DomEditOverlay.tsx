@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, type RefObject } from "react";
+import { memo, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import { type DomEditSelection } from "./domEditing";
 import { resolveDomEditGroupOverlayRect, toOverlayRect } from "./domEditOverlayGeometry";
 import {
@@ -9,7 +9,7 @@ import {
   focusDomEditOverlayElement,
 } from "./domEditOverlayGestures";
 import { useDomEditOverlayRects } from "./useDomEditOverlayRects";
-import { createDomEditOverlayGestureHandlers } from "./useDomEditOverlayGestures";
+import { useDomEditOverlayGestureHandlers } from "./useDomEditOverlayGestures";
 
 // Re-exports for external consumers — preserving existing import paths.
 export {
@@ -92,31 +92,34 @@ export const DomEditOverlay = memo(function DomEditOverlay({
   const rafPausedRef = useRef(false);
 
   const selectionRef = useRef(selection);
-  selectionRef.current = selection;
   const activeCompositionPathRef = useRef(activeCompositionPath);
-  activeCompositionPathRef.current = activeCompositionPath;
   const groupSelectionsRef = useRef(groupSelections);
-  groupSelectionsRef.current = groupSelections;
   const hoverSelectionRef = useRef(hoverSelection);
-  hoverSelectionRef.current = hoverSelection;
   const onPathOffsetCommitRef = useRef(onPathOffsetCommit);
-  onPathOffsetCommitRef.current = onPathOffsetCommit;
   const onGroupPathOffsetCommitRef = useRef(onGroupPathOffsetCommit);
-  onGroupPathOffsetCommitRef.current = onGroupPathOffsetCommit;
   const onBoxSizeCommitRef = useRef(onBoxSizeCommit);
-  onBoxSizeCommitRef.current = onBoxSizeCommit;
   const onRotationCommitRef = useRef(onRotationCommit);
-  onRotationCommitRef.current = onRotationCommit;
   const onBlockedMoveRef = useRef(onBlockedMove);
-  onBlockedMoveRef.current = onBlockedMove;
   const onManualDragStartRef = useRef(onManualDragStart);
-  onManualDragStartRef.current = onManualDragStart;
   const onCanvasPointerMoveRef = useRef(onCanvasPointerMove);
-  onCanvasPointerMoveRef.current = onCanvasPointerMove;
   const onCanvasPointerLeaveRef = useRef(onCanvasPointerLeave);
-  onCanvasPointerLeaveRef.current = onCanvasPointerLeave;
   const onSelectionChangeRef = useRef(onSelectionChange);
-  onSelectionChangeRef.current = onSelectionChange;
+
+  useLayoutEffect(() => {
+    selectionRef.current = selection;
+    activeCompositionPathRef.current = activeCompositionPath;
+    groupSelectionsRef.current = groupSelections;
+    hoverSelectionRef.current = hoverSelection;
+    onPathOffsetCommitRef.current = onPathOffsetCommit;
+    onGroupPathOffsetCommitRef.current = onGroupPathOffsetCommit;
+    onBoxSizeCommitRef.current = onBoxSizeCommit;
+    onRotationCommitRef.current = onRotationCommit;
+    onBlockedMoveRef.current = onBlockedMove;
+    onManualDragStartRef.current = onManualDragStart;
+    onCanvasPointerMoveRef.current = onCanvasPointerMove;
+    onCanvasPointerLeaveRef.current = onCanvasPointerLeave;
+    onSelectionChangeRef.current = onSelectionChange;
+  });
 
   const {
     overlayRect,
@@ -136,7 +139,7 @@ export const DomEditOverlay = memo(function DomEditOverlay({
     rafPausedRef,
   });
 
-  const gestures = createDomEditOverlayGestureHandlers({
+  const gestures = useDomEditOverlayGestureHandlers({
     overlayRef,
     iframeRef,
     boxRef,

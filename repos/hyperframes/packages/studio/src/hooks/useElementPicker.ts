@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useMountEffect } from "./useMountEffect";
 import { resolveSourceFile, applyPatch } from "../utils/sourcePatcher";
 
@@ -149,7 +149,9 @@ export function useElementPicker(
 
   // Ref for options to avoid stale closures in debounced callback
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   // Sync immediately (not debounced) — save on every change for reliability
   const syncToSource = useCallback(
@@ -289,7 +291,9 @@ export function useElementPicker(
 
   // Ref-like object that always points to the active iframe (override or primary)
   const activeIframeRef = useRef<HTMLIFrameElement | null>(null);
-  activeIframeRef.current = getActiveIframe();
+  useEffect(() => {
+    activeIframeRef.current = getActiveIframe();
+  }, [getActiveIframe]);
 
   return {
     isPickMode,

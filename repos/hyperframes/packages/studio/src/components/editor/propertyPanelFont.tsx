@@ -139,7 +139,7 @@ export function FontFamilyField({
   const [localFontData, setLocalFontData] = useState<LocalFontData[]>([]);
   const [googleFonts, setGoogleFonts] = useState<string[]>(() => [...POPULAR_GOOGLE_FONT_FAMILIES]);
   const [loadingLocalFonts, setLoadingLocalFonts] = useState(false);
-  const [loadingGoogleFonts, setLoadingGoogleFonts] = useState(false);
+  const [loadingGoogleFonts, setLoadingGoogleFonts] = useState(true);
   const [importingFonts, setImportingFonts] = useState(false);
   const [fontNotice, setFontNotice] = useState<string | null>(null);
   const canQueryLocalFonts =
@@ -177,7 +177,6 @@ export function FontFamilyField({
 
   useEffect(() => {
     let cancelled = false;
-    setLoadingGoogleFonts(true);
     void fetch("/api/fonts/google")
       .then((r) => (r.ok ? r.json() : null))
       .then((data: { fonts?: string[] } | null) => {

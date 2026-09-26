@@ -112,18 +112,10 @@ export const TimelineCanvas = memo(function TimelineCanvas({
         })
       : null;
   const activeDraggedPosition =
-    draggedClip?.started === true && activeDraggedElement && scrollRef.current
+    draggedClip?.started === true && activeDraggedElement
       ? {
-          left:
-            draggedClip.pointerClientX -
-            scrollRef.current.getBoundingClientRect().left +
-            scrollRef.current.scrollLeft -
-            draggedClip.pointerOffsetX,
-          top:
-            draggedClip.pointerClientY -
-            scrollRef.current.getBoundingClientRect().top +
-            scrollRef.current.scrollTop -
-            draggedClip.pointerOffsetY,
+          left: draggedClip.pointerClientX - draggedClip.pointerOffsetX,
+          top: draggedClip.pointerClientY - draggedClip.pointerOffsetY,
         }
       : null;
 
@@ -352,7 +344,7 @@ export const TimelineCanvas = memo(function TimelineCanvas({
       {/* Drag ghost */}
       {activeDraggedElement && activeDraggedPosition && (
         <div
-          className="absolute pointer-events-none"
+          className="fixed pointer-events-none"
           style={{
             top: activeDraggedPosition.top,
             left: activeDraggedPosition.left,

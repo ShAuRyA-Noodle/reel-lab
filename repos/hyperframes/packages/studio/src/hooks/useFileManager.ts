@@ -43,10 +43,14 @@ export function useFileManager({
   // ── Refs ──
 
   const editingPathRef = useRef(editingFile?.path);
-  editingPathRef.current = editingFile?.path;
+  useEffect(() => {
+    editingPathRef.current = editingFile?.path;
+  }, [editingFile?.path]);
 
   const projectIdRef = useRef(projectId);
-  projectIdRef.current = projectId;
+  useEffect(() => {
+    projectIdRef.current = projectId;
+  }, [projectId]);
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -56,12 +60,15 @@ export function useFileManager({
 
   // eslint-disable-next-line no-restricted-syntax
   useEffect(() => {
-    if (!projectId) {
-      setFileTreeLoaded(false);
-      return;
-    }
     let cancelled = false;
-    setFileTreeLoaded(false);
+    queueMicrotask(() => {
+      if (!cancelled) setFileTreeLoaded(false);
+    });
+    if (!projectId) {
+      return () => {
+        cancelled = true;
+      };
+    }
     fetch(`/api/projects/${projectId}`)
       .then((r) => r.json())
       .then((data: { files?: string[]; dir?: string }) => {
@@ -205,7 +212,7 @@ export function useFileManager({
         })
         .catch(() => {});
     },
-    [editingFile?.content],
+    [editingFile],
   );
 
   // ── File tree refresh ──

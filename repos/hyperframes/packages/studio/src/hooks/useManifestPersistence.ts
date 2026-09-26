@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useMountEffect } from "./useMountEffect";
 import {
   installStudioManualEditSeekReapply,
@@ -58,7 +58,9 @@ export function useManifestPersistence({
   // Keep a ref to the latest projectId so async save callbacks always read the
   // current value, even when the callback was captured in a stale closure.
   const projectIdRef = useRef(projectId);
-  projectIdRef.current = projectId;
+  useEffect(() => {
+    projectIdRef.current = projectId;
+  }, [projectId]);
 
   // ── Queue / drain helpers ──
 
@@ -121,7 +123,9 @@ export function useManifestPersistence({
     },
     [applyCurrentStudioManualEditsToPreview, previewIframeRef],
   );
-  applyStudioManualEditsToPreviewRef.current = applyStudioManualEditsToPreview;
+  useEffect(() => {
+    applyStudioManualEditsToPreviewRef.current = applyStudioManualEditsToPreview;
+  }, [applyStudioManualEditsToPreview]);
 
   // ── Sync preview after undo/redo ──
 

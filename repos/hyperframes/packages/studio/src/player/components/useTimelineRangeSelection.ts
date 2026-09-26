@@ -13,7 +13,7 @@ interface UseTimelineRangeSelectionInput {
   seekFromX: (clientX: number) => void;
   autoScrollDuringDrag: (clientX: number) => void;
   dragScrollRaf: React.RefObject<number>;
-  isDragging: React.RefObject<boolean>;
+  setIsDragging: (value: boolean) => void;
   setShowPopover: (v: boolean) => void;
 }
 
@@ -26,9 +26,10 @@ export function useTimelineRangeSelection({
   seekFromX,
   autoScrollDuringDrag,
   dragScrollRaf,
-  isDragging,
+  setIsDragging,
   setShowPopover,
 }: UseTimelineRangeSelectionInput) {
+  const isDragging = useRef(false);
   const isRangeSelecting = useRef(false);
   const rangeAnchorTime = useRef(0);
   const [rangeSelection, setRangeSelection] = useState<TimelineRangeSelection | null>(null);
@@ -61,11 +62,12 @@ export function useTimelineRangeSelection({
       if ((e.target as HTMLElement).closest("[data-clip]")) return;
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       isDragging.current = true;
+      setIsDragging(true);
       setRangeSelection(null);
       setShowPopover(false);
       seekFromX(e.clientX);
     },
-    [seekFromX, pps, scrollRef, isDragging, setShowPopover],
+    [seekFromX, pps, scrollRef, setIsDragging, setShowPopover],
   );
 
   const handlePointerMove = useCallback(
@@ -132,8 +134,9 @@ export function useTimelineRangeSelection({
     }
     seekFromX(pendingClientXRef.current);
     isDragging.current = false;
+    setIsDragging(false);
     cancelAnimationFrame(dragScrollRaf.current);
-  }, [isDragging, dragScrollRaf, setShowPopover, seekFromX]);
+  }, [setIsDragging, dragScrollRaf, setShowPopover, seekFromX]);
 
   return {
     rangeSelection,

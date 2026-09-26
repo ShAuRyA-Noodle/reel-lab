@@ -41,6 +41,8 @@ packages/player/tests/perf/results/
 # Rendered output (not test fixtures — those use git LFS)
 output/
 renders/
+!packages/studio/src/components/renders/
+!packages/studio/src/components/renders/**
 !packages/producer/tests/*/output/
 !packages/producer/tests/distributed/*/output/
 
@@ -102,7 +104,7 @@ cursor-tests/
 basecamp-video/
 launch-video*/
 ab-test/
-compositions/
+/compositions/
 video-6-2-patched/
 claude-design-hyperframes-video/
 .claude/worktrees/

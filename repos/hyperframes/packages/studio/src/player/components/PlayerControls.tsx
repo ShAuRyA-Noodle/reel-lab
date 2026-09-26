@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, memo } from "react";
+import { useRef, useState, useCallback, useEffect, useLayoutEffect, memo } from "react";
 import { useMountEffect } from "../../hooks/useMountEffect";
 import { formatFrameTime, frameToSeconds, stepFrameTime, formatTime } from "../lib/time";
 import { shouldMutePreviewAudio } from "../lib/timelineIframeHelpers";
@@ -82,10 +82,12 @@ export const PlayerControls = memo(function PlayerControls({
   const isDraggingRef = useRef(false);
   const currentTimeRef = useRef(0);
   const timeDisplayModeRef = useRef(timeDisplayMode);
-  timeDisplayModeRef.current = timeDisplayMode;
 
   const durationRef = useRef(duration);
-  durationRef.current = duration;
+  useLayoutEffect(() => {
+    timeDisplayModeRef.current = timeDisplayMode;
+    durationRef.current = duration;
+  }, [timeDisplayMode, duration]);
   const controlsDisabled = disabled || !timelineReady;
   const audioAutoMuted = playbackRate > 1;
   const effectiveAudioMuted = shouldMutePreviewAudio(audioMuted, playbackRate);

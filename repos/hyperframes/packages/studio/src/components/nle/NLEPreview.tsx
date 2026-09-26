@@ -95,14 +95,17 @@ export const NLEPreview = memo(function NLEPreview({
   suppressLoadingOverlay,
 }: NLEPreviewProps) {
   const baseKey = getPreviewPlayerKey({ projectId, directUrl, refreshKey });
-  const prevRefreshKeyRef = useRef(refreshKey);
+  const [refreshState, setRefreshState] = useState<{
+    refreshKey: number | undefined;
+    retiringKey: string | null;
+  }>({ refreshKey, retiringKey: null });
   const viewportRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [retiringKey, setRetiringKey] = useState<string | null>(null);
   const [stageSize, setStageSize] = useState(() => resolvePreviewStageSize(0, 0, portrait));
   const retiringTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const zoomRef = useRef<PreviewZoomState>(loadInitialZoom());
+  const [initialZoom] = useState(loadInitialZoom);
+  const zoomRef = useRef<PreviewZoomState>(initialZoom);
   const hudRef = useRef<HTMLDivElement>(null);
   const hudTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -182,12 +185,12 @@ export const NLEPreview = memo(function NLEPreview({
     [writeTransform],
   );
 
-  if (refreshKey !== prevRefreshKeyRef.current) {
-    const oldKey = `${baseKey}:${prevRefreshKeyRef.current ?? 0}`;
-    prevRefreshKeyRef.current = refreshKey;
-    setRetiringKey(oldKey);
+  if (refreshKey !== refreshState.refreshKey) {
+    const oldKey = `${baseKey}:${refreshState.refreshKey ?? 0}`;
+    setRefreshState({ refreshKey, retiringKey: oldKey });
   }
 
+  const retiringKey = refreshState.retiringKey;
   const activeKey = `${baseKey}:${refreshKey ?? 0}`;
 
   const applyInitialZoom = useCallback(() => {
@@ -202,7 +205,7 @@ export const NLEPreview = memo(function NLEPreview({
     applyInitialZoom();
     if (retiringTimerRef.current) clearTimeout(retiringTimerRef.current);
     retiringTimerRef.current = setTimeout(() => {
-      setRetiringKey(null);
+      setRefreshState((current) => ({ ...current, retiringKey: null }));
       retiringTimerRef.current = null;
     }, 160);
   };
@@ -359,8 +362,6 @@ export const NLEPreview = memo(function NLEPreview({
     };
   }, [applyZoom, stageSize.height, stageSize.width]);
 
-  const initial = zoomRef.current;
-
   return (
     <div className="flex flex-col h-full min-h-0">
       <div
@@ -376,7 +377,7 @@ export const NLEPreview = memo(function NLEPreview({
             style={{
               width: `${stageSize.width}px`,
               height: `${stageSize.height}px`,
-              transform: `translate(${toDomPrecision(initial.panX)}px, ${toDomPrecision(initial.panY)}px) scale(${toDomPrecision(initial.zoomPercent / 100)})`,
+              transform: `translate(${toDomPrecision(initialZoom.panX)}px, ${toDomPrecision(initialZoom.panY)}px) scale(${toDomPrecision(initialZoom.zoomPercent / 100)})`,
               transformOrigin: "center center",
             }}
             data-testid="preview-zoom-stage"

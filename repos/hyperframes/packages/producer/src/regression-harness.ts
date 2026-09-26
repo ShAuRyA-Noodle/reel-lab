@@ -270,8 +270,8 @@ function validateMetadata(meta: unknown): TestMetadata {
   ) {
     throw new Error("meta.json: 'minAudioCorrelation' must be between 0 and 1");
   }
-  if (typeof m.maxAudioLagWindows !== "number" || m.maxAudioLagWindows < 1) {
-    throw new Error("meta.json: 'maxAudioLagWindows' must be >= 1");
+  if (typeof m.maxAudioLagWindows !== "number" || m.maxAudioLagWindows < 0) {
+    throw new Error("meta.json: 'maxAudioLagWindows' must be >= 0");
   }
   if (
     m.maxAudioResidualRmsDb !== undefined &&
@@ -514,8 +514,15 @@ function psnrAtCheckpoint(
   snapshotVideo: string,
   checkpointSec: number,
   fps: number,
+  lastCommonFrameIndex: number,
 ): number {
-  const frameIndex = Math.max(0, Math.round(checkpointSec * fps));
+  // The nearest frame gives stable comparisons at scene transitions. At the
+  // final checkpoint it can round past the last encoded frame, so bound it by
+  // the common video duration before selecting from either stream.
+  const frameIndex = Math.max(
+    0,
+    Math.min(Math.round(checkpointSec * fps), lastCommonFrameIndex),
+  );
   const filter = `[0:v]select='eq(n\\,${frameIndex})',setpts=PTS-STARTPTS[rv];[1:v]select='eq(n\\,${frameIndex})',setpts=PTS-STARTPTS[gv];[rv][gv]psnr`;
   const args = [
     "-hide_banner",
@@ -1040,7 +1047,9 @@ async function runTestSuite(
       }
       visualPassed = failedFrames <= suite.meta.maxFrameFailures;
     } else {
-      // Visual comparison (100 frames, 1 per 1% of video duration)
+      // Visual comparison (100 frames, 1 per 1% of video duration).
+      // Use the center of each interval so a checkpoint cannot land exactly
+      // on a scene cut, where small timing differences can pick either scene.
       logPretty("Comparing visual quality (100 checkpoints)...", "🔍");
       const videoMetadata = await extractMediaMetadata(renderedOutputPath);
       const snapshotMetadata = await extractMediaMetadata(snapshotVideoPath);
@@ -1054,15 +1063,18 @@ async function runTestSuite(
         videoMetadata.durationSeconds,
         snapshotMetadata.durationSeconds,
       );
+      const fps = fpsToNumber(suite.meta.renderConfig.fps);
+      const lastCommonFrameIndex = Math.max(0, Math.round(videoDuration * fps) - 1);
 
       const minPsnrForMode = resolveMinPsnrForMode(options.mode, suite.meta.minPsnr);
       for (let i = 0; i < 100; i++) {
-        const time = (videoDuration * i) / 100;
+        const time = (videoDuration * (i + 0.5)) / 100;
         const psnr = psnrAtCheckpoint(
           renderedOutputPath,
           snapshotVideoPath,
           time,
-          fpsToNumber(suite.meta.renderConfig.fps),
+          fps,
+          lastCommonFrameIndex,
         );
         visualCheckpoints.push({
           time,

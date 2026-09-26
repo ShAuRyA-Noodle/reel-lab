@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useMountEffect } from "../../hooks/useMountEffect";
 import {
   resolveTimelineMove,
@@ -77,21 +77,29 @@ export function useTimelineClipDrag({
 }: UseTimelineClipDragInput) {
   const updateElement = usePlayerStore((s) => s.updateElement);
 
-  const [draggedClip, setDraggedClip] = useState<DraggedClipState | null>(null);
+  const [draggedClip, setDraggedClipState] = useState<DraggedClipState | null>(null);
   const draggedClipRef = useRef<DraggedClipState | null>(null);
-  draggedClipRef.current = draggedClip;
+  const setDraggedClip = useCallback((next: DraggedClipState | null) => {
+    draggedClipRef.current = next;
+    setDraggedClipState(next);
+  }, []);
 
-  const [resizingClip, setResizingClip] = useState<ResizingClipState | null>(null);
+  const [resizingClip, setResizingClipState] = useState<ResizingClipState | null>(null);
   const resizingClipRef = useRef<ResizingClipState | null>(null);
-  resizingClipRef.current = resizingClip;
+  const setResizingClip = useCallback((next: ResizingClipState | null) => {
+    resizingClipRef.current = next;
+    setResizingClipState(next);
+  }, []);
 
   const blockedClipRef = useRef<BlockedClipState | null>(null);
   const suppressClickRef = useRef(false);
 
   const onMoveElementRef = useRef(onMoveElement);
-  onMoveElementRef.current = onMoveElement;
   const onResizeElementRef = useRef(onResizeElement);
-  onResizeElementRef.current = onResizeElement;
+  useEffect(() => {
+    onMoveElementRef.current = onMoveElement;
+    onResizeElementRef.current = onResizeElement;
+  }, [onMoveElement, onResizeElement]);
 
   const clipDragScrollRaf = useRef(0);
   const clipDragPointerRef = useRef<{ clientX: number; clientY: number } | null>(null);
@@ -138,30 +146,31 @@ export function useTimelineClipDrag({
     }
   }, []);
 
-  const stepClipDragAutoScroll = useCallback(() => {
-    clipDragScrollRaf.current = 0;
-    const drag = draggedClipRef.current;
-    const pointer = clipDragPointerRef.current;
-    const scroll = scrollRef.current;
-    if (!drag || !pointer || !scroll) return;
+  const stepClipDragAutoScroll = useCallback(
+    function stepClipDragAutoScroll() {
+      clipDragScrollRaf.current = 0;
+      const drag = draggedClipRef.current;
+      const pointer = clipDragPointerRef.current;
+      const scroll = scrollRef.current;
+      if (!drag || !pointer || !scroll) return;
 
-    const rect = scroll.getBoundingClientRect();
-    const delta = resolveTimelineAutoScroll(rect, pointer.clientX, pointer.clientY);
-    if (delta.x === 0 && delta.y === 0) return;
+      const rect = scroll.getBoundingClientRect();
+      const delta = resolveTimelineAutoScroll(rect, pointer.clientX, pointer.clientY);
+      if (delta.x === 0 && delta.y === 0) return;
 
-    const maxScrollLeft = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
-    const maxScrollTop = Math.max(0, scroll.scrollHeight - scroll.clientHeight);
-    const nextScrollLeft = Math.max(0, Math.min(maxScrollLeft, scroll.scrollLeft + delta.x));
-    const nextScrollTop = Math.max(0, Math.min(maxScrollTop, scroll.scrollTop + delta.y));
-    if (nextScrollLeft === scroll.scrollLeft && nextScrollTop === scroll.scrollTop) return;
+      const maxScrollLeft = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
+      const maxScrollTop = Math.max(0, scroll.scrollHeight - scroll.clientHeight);
+      const nextScrollLeft = Math.max(0, Math.min(maxScrollLeft, scroll.scrollLeft + delta.x));
+      const nextScrollTop = Math.max(0, Math.min(maxScrollTop, scroll.scrollTop + delta.y));
+      if (nextScrollLeft === scroll.scrollLeft && nextScrollTop === scroll.scrollTop) return;
 
-    scroll.scrollLeft = nextScrollLeft;
-    scroll.scrollTop = nextScrollTop;
-    setDraggedClip((prev) =>
-      prev ? updateDraggedClipPreview(prev, pointer.clientX, pointer.clientY) : prev,
-    );
-    clipDragScrollRaf.current = requestAnimationFrame(stepClipDragAutoScroll);
-  }, [scrollRef, updateDraggedClipPreview]);
+      scroll.scrollLeft = nextScrollLeft;
+      scroll.scrollTop = nextScrollTop;
+      setDraggedClip(updateDraggedClipPreview(drag, pointer.clientX, pointer.clientY));
+      clipDragScrollRaf.current = requestAnimationFrame(stepClipDragAutoScroll);
+    },
+    [scrollRef, updateDraggedClipPreview, setDraggedClip],
+  );
 
   const syncClipDragAutoScroll = useCallback(
     (clientX: number, clientY: number) => {
@@ -185,11 +194,13 @@ export function useTimelineClipDrag({
   );
 
   const updateDraggedClipPreviewRef = useRef(updateDraggedClipPreview);
-  updateDraggedClipPreviewRef.current = updateDraggedClipPreview;
   const syncClipDragAutoScrollRef = useRef(syncClipDragAutoScroll);
-  syncClipDragAutoScrollRef.current = syncClipDragAutoScroll;
   const stopClipDragAutoScrollRef = useRef(stopClipDragAutoScroll);
-  stopClipDragAutoScrollRef.current = stopClipDragAutoScroll;
+  useEffect(() => {
+    updateDraggedClipPreviewRef.current = updateDraggedClipPreview;
+    syncClipDragAutoScrollRef.current = syncClipDragAutoScroll;
+    stopClipDragAutoScrollRef.current = stopClipDragAutoScroll;
+  }, [updateDraggedClipPreview, syncClipDragAutoScroll, stopClipDragAutoScroll]);
 
   useMountEffect(() => {
     const clearSuppressedClick = () => {
@@ -238,17 +249,13 @@ export function useTimelineClipDrag({
           e.clientX,
         );
 
-        setResizingClip((prev) =>
-          prev
-            ? {
-                ...prev,
-                started: true,
-                previewStart: nextResize.start,
-                previewDuration: nextResize.duration,
-                previewPlaybackStart: nextResize.playbackStart,
-              }
-            : prev,
-        );
+        setResizingClip({
+          ...resize,
+          started: true,
+          previewStart: nextResize.start,
+          previewDuration: nextResize.duration,
+          previewPlaybackStart: nextResize.playbackStart,
+        });
         return;
       }
 
@@ -277,9 +284,7 @@ export function useTimelineClipDrag({
       setShowPopover(false);
       setRangeSelectionRef.current?.(null);
 
-      setDraggedClip((prev) =>
-        prev ? updateDraggedClipPreviewRef.current(prev, e.clientX, e.clientY) : prev,
-      );
+      setDraggedClip(updateDraggedClipPreviewRef.current(drag, e.clientX, e.clientY));
       syncClipDragAutoScrollRef.current(e.clientX, e.clientY);
     };
 

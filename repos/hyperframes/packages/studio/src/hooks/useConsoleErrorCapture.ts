@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { LintFinding } from "../components/LintModal";
 
+function getPreviewWindow(iframe: HTMLIFrameElement): (Window & typeof globalThis) | null {
+  return iframe.contentWindow as (Window & typeof globalThis) | null;
+}
+
 /**
  * Captures `console.error` and `window.onerror` events from a preview iframe
  * and exposes them as LintFinding[] for the console errors modal.
@@ -19,7 +23,7 @@ export function useConsoleErrorCapture(previewIframe: HTMLIFrameElement | null) 
     if (!previewIframe) return;
     const attachErrorCapture = () => {
       try {
-        const win = previewIframe.contentWindow as (Window & typeof globalThis) | null;
+        const win = getPreviewWindow(previewIframe);
         if (!win) return;
         if ((win as unknown as Record<string, unknown>).__hfErrorCapture) return;
         (win as unknown as Record<string, unknown>).__hfErrorCapture = true;

@@ -445,7 +445,9 @@ export function useTimelinePlayer() {
   }, [saveSeekPosition]);
 
   const getAdapterRef = useRef(getAdapter);
-  getAdapterRef.current = getAdapter;
+  useEffect(() => {
+    getAdapterRef.current = getAdapter;
+  }, [getAdapter]);
 
   useMountEffect(() => {
     const handleWindowKeyDown = (e: KeyboardEvent) => playbackKeyDownRef.current(e);
