@@ -47,14 +47,14 @@
     "@types/aws-lambda": "^8.10.163",
     "@types/node": "^25.0.10",
     "@types/tar": "^6.1.13",
-    "aws-cdk-lib": "^2.270.0",
+    "aws-cdk-lib": "^2.260.0",
     "constructs": "^10.8.1",
     "esbuild": "^0.28.2",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "^2.270.0",
+    "aws-cdk-lib": "^2.260.0",
     "constructs": "^10.8.1"
   },
   "peerDependenciesMeta": {
