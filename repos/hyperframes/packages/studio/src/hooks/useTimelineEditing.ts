@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { TimelineElement } from "../player";
 import { usePlayerStore } from "../player";
 import { applyPatchByTarget, readAttributeByTarget } from "../utils/sourcePatcher";
@@ -84,7 +84,9 @@ export function useTimelineEditing({
   uploadProjectFiles,
 }: UseTimelineEditingOptions) {
   const projectIdRef = useRef(projectId);
-  projectIdRef.current = projectId;
+  useEffect(() => {
+    projectIdRef.current = projectId;
+  }, [projectId]);
 
   const lastBlockedTimelineToastAtRef = useRef(0);
 

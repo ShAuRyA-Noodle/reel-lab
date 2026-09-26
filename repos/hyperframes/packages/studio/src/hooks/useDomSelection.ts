@@ -103,9 +103,11 @@ export function useDomSelection({
   const domEditHoverSelectionRef = useRef<DomEditSelection | null>(domEditHoverSelection);
 
   // Keep refs in sync with state
-  domEditSelectionRef.current = domEditSelection;
-  domEditGroupSelectionsRef.current = domEditGroupSelections;
-  domEditHoverSelectionRef.current = domEditHoverSelection;
+  useEffect(() => {
+    domEditSelectionRef.current = domEditSelection;
+    domEditGroupSelectionsRef.current = domEditGroupSelections;
+    domEditHoverSelectionRef.current = domEditHoverSelection;
+  }, [domEditSelection, domEditGroupSelections, domEditHoverSelection]);
 
   // ── Callbacks ──
 
@@ -380,18 +382,41 @@ export function useDomSelection({
   // Clear selection on caption mode change
   // eslint-disable-next-line no-restricted-syntax
   useEffect(() => {
-    if (!captionEditMode) return;
-    applyDomSelection(null, { revealPanel: false });
-  }, [applyDomSelection, captionEditMode]);
+    if (!captionEditMode || (!domEditSelection && domEditGroupSelections.length === 0)) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) applyDomSelection(null, { revealPanel: false });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applyDomSelection, captionEditMode, domEditGroupSelections, domEditSelection]);
 
   // Disabled inspector effect
   // eslint-disable-next-line no-restricted-syntax
   useEffect(() => {
     if (STUDIO_INSPECTOR_PANELS_ENABLED) return;
-    updateDomEditHoverSelection(null);
-    applyDomSelection(null, { revealPanel: false });
-    if (rightPanelTab !== "renders") setRightPanelTab("renders");
-  }, [applyDomSelection, rightPanelTab, updateDomEditHoverSelection, setRightPanelTab]);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      if (domEditHoverSelection) updateDomEditHoverSelection(null);
+      if (domEditSelection || domEditGroupSelections.length > 0) {
+        applyDomSelection(null, { revealPanel: false });
+      }
+      if (rightPanelTab !== "renders") setRightPanelTab("renders");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    applyDomSelection,
+    domEditGroupSelections,
+    domEditHoverSelection,
+    domEditSelection,
+    rightPanelTab,
+    updateDomEditHoverSelection,
+    setRightPanelTab,
+  ]);
 
   return {
     // State

@@ -1,4 +1,13 @@
-import { useRef, useMemo, useCallback, useState, useEffect, memo, type ReactNode } from "react";
+import {
+  useRef,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  memo,
+  type ReactNode,
+} from "react";
 import { usePlayerStore, type TimelineElement } from "../store/playerStore";
 import { useMountEffect } from "../../hooks/useMountEffect";
 import { EditPopover } from "./EditModal";
@@ -97,6 +106,9 @@ export const Timeline = memo(function Timeline({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hoveredClip, setHoveredClip] = useState<string | null>(null);
   const isDragging = useRef(false);
+  const setIsDragging = useCallback((value: boolean) => {
+    isDragging.current = value;
+  }, []);
   const [shiftHeld, setShiftHeld] = useState(false);
 
   useMountEffect(() => {
@@ -186,11 +198,9 @@ export const Timeline = memo(function Timeline({
 
   const trackOrder = useMemo(() => tracks.map(([trackNum]) => trackNum), [tracks]);
   const trackOrderRef = useRef(trackOrder);
-  trackOrderRef.current = trackOrder;
 
   const ppsRef = useRef(100);
   const durationRef = useRef(effectiveDuration);
-  durationRef.current = effectiveDuration;
 
   // Stable ref so useTimelineClipDrag can clear rangeSelection without circular dep
   const setRangeSelectionRef = useRef<((sel: null) => void) | null>(null);
@@ -231,21 +241,16 @@ export const Timeline = memo(function Timeline({
     [elements, selectedElementId],
   );
   const selectedElementRef = useRef<TimelineElement | null>(selectedElement);
-  selectedElementRef.current = selectedElement;
 
   const fitPps =
     viewportWidth > GUTTER && effectiveDuration > 0
       ? (viewportWidth - GUTTER - 2) / effectiveDuration
       : 100;
   const pps = getTimelinePixelsPerSecond(fitPps, zoomMode, manualZoomPercent);
-  ppsRef.current = pps;
   const trackContentWidth = Math.max(0, effectiveDuration * pps);
   const zoomModeRef = useRef(zoomMode);
-  zoomModeRef.current = zoomMode;
   const manualZoomPercentRef = useRef(manualZoomPercent);
-  manualZoomPercentRef.current = manualZoomPercent;
   const fitPpsRef = useRef(fitPps);
-  fitPpsRef.current = fitPps;
 
   const { seekFromX, autoScrollDuringDrag, dragScrollRaf } = useTimelinePlayhead({
     playheadRef,
@@ -285,13 +290,31 @@ export const Timeline = memo(function Timeline({
     seekFromX,
     autoScrollDuringDrag,
     dragScrollRaf,
-    isDragging,
+    setIsDragging,
     setShowPopover,
   });
   // Wire setRangeSelection into the stable ref consumed by useTimelineClipDrag
-  setRangeSelectionRef.current = setRangeSelection;
+  useLayoutEffect(() => {
+    trackOrderRef.current = trackOrder;
+    durationRef.current = effectiveDuration;
+    selectedElementRef.current = selectedElement;
+    ppsRef.current = pps;
+    zoomModeRef.current = zoomMode;
+    manualZoomPercentRef.current = manualZoomPercent;
+    fitPpsRef.current = fitPps;
+    setRangeSelectionRef.current = setRangeSelection;
+  }, [
+    trackOrder,
+    effectiveDuration,
+    selectedElement,
+    pps,
+    zoomMode,
+    manualZoomPercent,
+    fitPps,
+    setRangeSelection,
+  ]);
 
-  const prevSelectedRef = useRef(selectedElementRef.current);
+  const prevSelectedRef = useRef(selectedElement);
   // eslint-disable-next-line no-restricted-syntax, react-hooks/exhaustive-deps
   useEffect(() => {
     const prev = prevSelectedRef.current;

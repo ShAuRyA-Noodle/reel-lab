@@ -81,7 +81,7 @@ export type UseDomEditOverlayGesturesOptions = {
   ) => void;
 };
 
-export function createDomEditOverlayGestureHandlers(opts: UseDomEditOverlayGesturesOptions) {
+export function useDomEditOverlayGestureHandlers(opts: UseDomEditOverlayGesturesOptions) {
   const setDraftOverlayRect = (next: OverlayRect) => {
     opts.setOverlayRect(next);
   };

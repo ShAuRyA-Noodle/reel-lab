@@ -276,11 +276,15 @@ export function usePersistentEditHistory(options: UsePersistentEditHistoryOption
     let cancelled = false;
     const emptyState = createEmptyEditHistory();
     storeRef.current = null;
-    setState(emptyState);
-    setLoaded(false);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setState(emptyState);
+      setLoaded(!projectId);
+    });
     if (!projectId) {
-      setLoaded(true);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
 
     loadEditHistoryState(storage, projectId)

@@ -158,125 +158,138 @@ export function useAppHotkeys({
   // ── Stable refs for the consolidated keydown handler ──
 
   const handleToggleRef = useRef(handleTimelineToggleHotkey);
-  handleToggleRef.current = handleTimelineToggleHotkey;
   const handleDeleteRef = useRef(handleTimelineElementDelete);
-  handleDeleteRef.current = handleTimelineElementDelete;
   const handleDomEditDeleteRef = useRef(handleDomEditElementDelete);
-  handleDomEditDeleteRef.current = handleDomEditElementDelete;
   const handleUndoRef = useRef(handleUndo);
-  handleUndoRef.current = handleUndo;
   const handleRedoRef = useRef(handleRedo);
-  handleRedoRef.current = handleRedo;
   const handleCopyRef = useRef(handleCopy);
-  handleCopyRef.current = handleCopy;
   const handlePasteRef = useRef(handlePaste);
-  handlePasteRef.current = handlePaste;
   const handleCutRef = useRef(handleCut);
-  handleCutRef.current = handleCut;
+  useEffect(() => {
+    handleToggleRef.current = handleTimelineToggleHotkey;
+    handleDeleteRef.current = handleTimelineElementDelete;
+    handleDomEditDeleteRef.current = handleDomEditElementDelete;
+    handleUndoRef.current = handleUndo;
+    handleRedoRef.current = handleRedo;
+    handleCopyRef.current = handleCopy;
+    handlePasteRef.current = handlePaste;
+    handleCutRef.current = handleCut;
+  }, [
+    handleTimelineToggleHotkey,
+    handleTimelineElementDelete,
+    handleDomEditElementDelete,
+    handleUndo,
+    handleRedo,
+    handleCopy,
+    handlePaste,
+    handleCut,
+  ]);
 
   // ── Consolidated keydown handler ──
 
-  handleAppKeyDownRef.current = (event: KeyboardEvent) => {
-    // Shift+T — toggle timeline
-    handleToggleRef.current(event);
+  useEffect(() => {
+    handleAppKeyDownRef.current = (event: KeyboardEvent) => {
+      // Shift+T — toggle timeline
+      handleToggleRef.current(event);
 
-    // Cmd/Ctrl+Z — undo, Cmd/Ctrl+Shift+Z or Ctrl+Y — redo
-    if (event.metaKey || event.ctrlKey) {
-      if (!shouldIgnoreHistoryShortcut(event.target)) {
-        const key = event.key.toLowerCase();
-        if (key === "z" && !event.shiftKey) {
+      // Cmd/Ctrl+Z — undo, Cmd/Ctrl+Shift+Z or Ctrl+Y — redo
+      if (event.metaKey || event.ctrlKey) {
+        if (!shouldIgnoreHistoryShortcut(event.target)) {
+          const key = event.key.toLowerCase();
+          if (key === "z" && !event.shiftKey) {
+            event.preventDefault();
+            void handleUndoRef.current();
+            return;
+          }
+          if ((key === "z" && event.shiftKey) || (event.ctrlKey && !event.metaKey && key === "y")) {
+            event.preventDefault();
+            void handleRedoRef.current();
+            return;
+          }
+        }
+
+        // Cmd/Ctrl+1 — sidebar: Compositions tab
+        if (event.key === "1") {
           event.preventDefault();
-          void handleUndoRef.current();
+          leftSidebarRef.current?.selectTab("compositions");
           return;
         }
-        if ((key === "z" && event.shiftKey) || (event.ctrlKey && !event.metaKey && key === "y")) {
+
+        // Cmd/Ctrl+2 — sidebar: Assets tab
+        if (event.key === "2") {
           event.preventDefault();
-          void handleRedoRef.current();
+          leftSidebarRef.current?.selectTab("assets");
           return;
         }
-      }
 
-      // Cmd/Ctrl+1 — sidebar: Compositions tab
-      if (event.key === "1") {
-        event.preventDefault();
-        leftSidebarRef.current?.selectTab("compositions");
-        return;
-      }
-
-      // Cmd/Ctrl+2 — sidebar: Assets tab
-      if (event.key === "2") {
-        event.preventDefault();
-        leftSidebarRef.current?.selectTab("assets");
-        return;
-      }
-
-      // Cmd/Ctrl+C — copy (only preventDefault if we actually have something to copy)
-      const copyPasteKey = event.key.toLowerCase();
-      if (
-        copyPasteKey === "c" &&
-        !event.shiftKey &&
-        !event.altKey &&
-        !isEditableTarget(event.target)
-      ) {
-        if (handleCopyRef.current()) {
-          event.preventDefault();
+        // Cmd/Ctrl+C — copy (only preventDefault if we actually have something to copy)
+        const copyPasteKey = event.key.toLowerCase();
+        if (
+          copyPasteKey === "c" &&
+          !event.shiftKey &&
+          !event.altKey &&
+          !isEditableTarget(event.target)
+        ) {
+          if (handleCopyRef.current()) {
+            event.preventDefault();
+          }
+          return;
         }
-        return;
-      }
 
-      // Cmd/Ctrl+V — paste
-      if (
-        copyPasteKey === "v" &&
-        !event.shiftKey &&
-        !event.altKey &&
-        !isEditableTarget(event.target)
-      ) {
-        event.preventDefault();
-        void handlePasteRef.current();
-        return;
-      }
-
-      // Cmd/Ctrl+X — cut (only preventDefault if there's a selected element to cut)
-      if (
-        copyPasteKey === "x" &&
-        !event.shiftKey &&
-        !event.altKey &&
-        !isEditableTarget(event.target)
-      ) {
-        const hasSelection =
-          !!usePlayerStore.getState().selectedElementId || !!domEditSelectionRef.current;
-        if (hasSelection) {
+        // Cmd/Ctrl+V — paste
+        if (
+          copyPasteKey === "v" &&
+          !event.shiftKey &&
+          !event.altKey &&
+          !isEditableTarget(event.target)
+        ) {
           event.preventDefault();
-          void handleCutRef.current();
+          void handlePasteRef.current();
+          return;
         }
-        return;
-      }
-    }
 
-    // Delete / Backspace — remove selected element (timeline clip or preview selection)
-    if (
-      (event.key === "Delete" || event.key === "Backspace") &&
-      !event.metaKey &&
-      !event.ctrlKey &&
-      !event.altKey &&
-      !isEditableTarget(event.target)
-    ) {
-      const { selectedElementId, elements } = usePlayerStore.getState();
-      if (selectedElementId) {
-        const element = elements.find((el) => (el.key ?? el.id) === selectedElementId);
-        if (element) {
-          event.preventDefault();
-          void handleDeleteRef.current(element);
+        // Cmd/Ctrl+X — cut (only preventDefault if there's a selected element to cut)
+        if (
+          copyPasteKey === "x" &&
+          !event.shiftKey &&
+          !event.altKey &&
+          !isEditableTarget(event.target)
+        ) {
+          const hasSelection =
+            !!usePlayerStore.getState().selectedElementId || !!domEditSelectionRef.current;
+          if (hasSelection) {
+            event.preventDefault();
+            void handleCutRef.current();
+          }
           return;
         }
       }
-      const domSelection = domEditSelectionRef.current;
-      if (domSelection) {
-        event.preventDefault();
-        void handleDomEditDeleteRef.current(domSelection);
+
+      // Delete / Backspace — remove selected element (timeline clip or preview selection)
+      if (
+        (event.key === "Delete" || event.key === "Backspace") &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !isEditableTarget(event.target)
+      ) {
+        const { selectedElementId, elements } = usePlayerStore.getState();
+        if (selectedElementId) {
+          const element = elements.find((el) => (el.key ?? el.id) === selectedElementId);
+          if (element) {
+            event.preventDefault();
+            void handleDeleteRef.current(element);
+            return;
+          }
+        }
+        const domSelection = domEditSelectionRef.current;
+        if (domSelection) {
+          event.preventDefault();
+          void handleDomEditDeleteRef.current(domSelection);
+        }
       }
-    }
-  };
+    };
+  }, [domEditSelectionRef, leftSidebarRef]);
 
   // ── Window keydown listener ──
 

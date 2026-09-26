@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useCaptionStore } from "../store";
 import { useMountEffect } from "../../hooks/useMountEffect";
 import type { CaptionStyle } from "../types";
@@ -60,7 +60,9 @@ function buildOverrides(model: {
  */
 export function useCaptionSync(projectId: string | null) {
   const projectIdRef = useRef(projectId);
-  projectIdRef.current = projectId;
+  useEffect(() => {
+    projectIdRef.current = projectId;
+  }, [projectId]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Flag to suppress auto-save during loadOverrides

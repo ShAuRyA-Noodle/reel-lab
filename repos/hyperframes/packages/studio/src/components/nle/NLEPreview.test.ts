@@ -11,23 +11,16 @@ vi.mock("../../player", async () => {
   const React = await import("react");
 
   return {
-    Player: React.forwardRef(function MockPlayer(
-      props: {
-        onLoad?: () => void;
-        style?: React.CSSProperties;
-      },
-      ref: React.ForwardedRef<HTMLIFrameElement>,
-    ) {
+    Player: function MockPlayer(props: { onLoad?: () => void; style?: React.CSSProperties }) {
       React.useEffect(() => {
         props.onLoad?.();
       }, [props]);
 
       return React.createElement("div", {
-        ref: ref as React.ForwardedRef<HTMLDivElement>,
         "data-testid": "mock-player",
         style: props.style,
       });
-    }),
+    },
   };
 });
 

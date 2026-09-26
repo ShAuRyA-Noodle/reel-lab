@@ -127,10 +127,17 @@ export function useAskAgentModal({
   // Clear agent-prompt state when selection changes
   // eslint-disable-next-line no-restricted-syntax
   useEffect(() => {
-    setAgentPromptTagSnippet(undefined);
-    setAgentPromptSelectionContext(undefined);
-    setAgentModalAnchorPoint(null);
-    setCopiedAgentPrompt(false);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setAgentPromptTagSnippet(undefined);
+      setAgentPromptSelectionContext(undefined);
+      setAgentModalAnchorPoint(null);
+      setCopiedAgentPrompt(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [domEditSelection]);
 
   // Cleanup copiedAgentTimerRef

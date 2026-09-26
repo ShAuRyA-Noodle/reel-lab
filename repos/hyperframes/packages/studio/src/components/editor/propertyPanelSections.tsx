@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Plus, Type } from "../../icons/SystemIcons";
 import { isTextEditableSelection, type DomEditSelection } from "./domEditing";
 import type { ImportedFontAsset } from "./fontAssets";
@@ -72,15 +72,17 @@ function TextAreaField({
   onCommit: (nextValue: string) => void;
 }) {
   const [draft, setDraft] = useState(value);
+  const [previousValue, setPreviousValue] = useState(value);
+  const [focused, setFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const focusedRef = useRef(false);
   const valueRef = useRef(value);
-  valueRef.current = value;
-
-  useEffect(() => {
-    if (focusedRef.current) return;
-    setDraft(value);
+  if (previousValue !== value) {
+    setPreviousValue(value);
+    if (!focused) setDraft(value);
+  }
+  useLayoutEffect(() => {
+    valueRef.current = value;
   }, [value]);
   useEffect(
     () => () => {
@@ -114,14 +116,14 @@ function TextAreaField({
           disabled={disabled}
           rows={4}
           onFocus={() => {
-            focusedRef.current = true;
+            setFocused(true);
           }}
           onChange={(e) => {
             setDraft(e.target.value);
             scheduleCommit(e.target.value);
           }}
           onBlur={() => {
-            focusedRef.current = false;
+            setFocused(false);
             commitDraft(draft);
           }}
           className="w-full resize-none bg-transparent text-[11px] font-medium text-neutral-100 outline-none disabled:cursor-not-allowed disabled:text-neutral-600"
@@ -352,13 +354,13 @@ export function TextSection({
     element.textFields[0]?.key ?? null,
   );
 
-  useEffect(() => {
-    const nextFields = element.textFields;
-    setActiveTextFieldKey((current) => {
-      if (current && nextFields.some((field) => field.key === current)) return current;
-      return nextFields[0]?.key ?? null;
-    });
-  }, [element.id, element.selector, element.textFields]);
+  if (
+    !activeTextFieldKey ||
+    !element.textFields.some((field) => field.key === activeTextFieldKey)
+  ) {
+    const nextKey = element.textFields[0]?.key ?? null;
+    if (nextKey !== activeTextFieldKey) setActiveTextFieldKey(nextKey);
+  }
 
   if (!hasTextControls) return null;
 

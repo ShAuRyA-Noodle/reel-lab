@@ -121,19 +121,17 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
     const loadCountRef = useRef(0);
     const assetPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const assetFadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const [assetsLoading, setAssetsLoading] = useState(false);
-    const [assetOverlayVisible, setAssetOverlayVisible] = useState(false);
-    const [assetOverlayFading, setAssetOverlayFading] = useState(false);
+    const [assetOverlayPhase, setAssetOverlayPhase] = useState<"hidden" | "visible" | "fading">(
+      "hidden",
+    );
+    const assetOverlayPhaseRef = useRef<"hidden" | "visible" | "fading">("hidden");
     const [shaderTransitionLoading, setShaderTransitionLoading] = useState(false);
     const [compositionLoading, setCompositionLoading] = useState(true);
     const [compositionOverlayDeferred, setCompositionOverlayDeferred] = useState(true);
 
     // eslint-disable-next-line no-restricted-syntax
     useEffect(() => {
-      if (!compositionLoading) {
-        setCompositionOverlayDeferred(true);
-        return;
-      }
+      if (!compositionLoading) return;
       const timer = setTimeout(
         () => setCompositionOverlayDeferred(false),
         COMPOSITION_LOADING_OVERLAY_DELAY_MS,
@@ -147,6 +145,25 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
 
       let canceled = false;
       let cleanup: (() => void) | undefined;
+
+      const showAssetLoading = () => {
+        if (assetFadeRef.current) clearTimeout(assetFadeRef.current);
+        assetFadeRef.current = null;
+        assetOverlayPhaseRef.current = "visible";
+        setAssetOverlayPhase("visible");
+      };
+
+      const hideAssetLoading = () => {
+        if (assetOverlayPhaseRef.current !== "visible") return;
+        if (assetFadeRef.current) clearTimeout(assetFadeRef.current);
+        assetOverlayPhaseRef.current = "fading";
+        setAssetOverlayPhase("fading");
+        assetFadeRef.current = setTimeout(() => {
+          assetOverlayPhaseRef.current = "hidden";
+          setAssetOverlayPhase("hidden");
+          assetFadeRef.current = null;
+        }, 240);
+      };
 
       // Dynamic import registers the custom element in the browser only.
       import("@hyperframes/player").then(() => {
@@ -201,9 +218,11 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
 
         const handleReady = () => {
           setCompositionLoading(false);
+          setCompositionOverlayDeferred(true);
         };
         const handleError = () => {
           setCompositionLoading(false);
+          setCompositionOverlayDeferred(true);
         };
         player.addEventListener("ready", handleReady);
         player.addEventListener("error", handleError);
@@ -213,6 +232,7 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
           loadCountRef.current++;
           setShaderTransitionLoading(false);
           setCompositionLoading(true);
+          setCompositionOverlayDeferred(true);
           // Reveal animation on reload (hot-reload, composition switch)
           if (loadCountRef.current > 1) {
             container.classList.remove("preview-revealing");
@@ -243,7 +263,7 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
           const isContentRefresh = loadCountRef.current > 1;
           let lastUnloaded = isContentRefresh ? false : hasUnloadedAssets(iframe, false);
           if (lastUnloaded) {
-            setAssetsLoading(true);
+            showAssetLoading();
             let attempts = 0;
             assetPollRef.current = setInterval(() => {
               attempts += 1;
@@ -251,7 +271,7 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
               if (!lastUnloaded || attempts > 100) {
                 if (assetPollRef.current) clearInterval(assetPollRef.current);
                 assetPollRef.current = null;
-                setAssetsLoading(false);
+                hideAssetLoading();
                 if (lastUnloaded) {
                   console.debug(
                     "[Player] Asset-loading overlay timed out after 10s; hiding anyway. Check network or asset integrity.",
@@ -260,7 +280,7 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
               }
             }, 100);
           } else {
-            setAssetsLoading(false);
+            hideAssetLoading();
           }
         };
         iframe.addEventListener("load", handleLoad);
@@ -273,6 +293,8 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
           player.removeEventListener("error", handleError);
           if (assetPollRef.current) clearInterval(assetPollRef.current);
           assetPollRef.current = null;
+          if (assetFadeRef.current) clearTimeout(assetFadeRef.current);
+          assetFadeRef.current = null;
           container.removeChild(player);
           // Clear the forwarded ref only if it still points to THIS iframe.
           // During crossfade refreshes the retiring Player unmounts after the
@@ -298,39 +320,12 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
       };
     });
 
-    useEffect(() => {
-      if (assetFadeRef.current) {
-        clearTimeout(assetFadeRef.current);
-        assetFadeRef.current = null;
-      }
-
-      if (assetsLoading) {
-        setAssetOverlayVisible(true);
-        setAssetOverlayFading(false);
-        return;
-      }
-
-      setAssetOverlayFading(true);
-      assetFadeRef.current = setTimeout(() => {
-        setAssetOverlayVisible(false);
-        setAssetOverlayFading(false);
-        assetFadeRef.current = null;
-      }, 240);
-
-      return () => {
-        if (assetFadeRef.current) {
-          clearTimeout(assetFadeRef.current);
-          assetFadeRef.current = null;
-        }
-      };
-    }, [assetsLoading]);
-
     const showCompositionOverlay =
       !suppressLoadingOverlay &&
       !compositionOverlayDeferred &&
       shouldShowCompositionLoadingOverlay(compositionLoading);
     const showAssetOverlay =
-      assetOverlayVisible && !shaderTransitionLoading && !showCompositionOverlay;
+      assetOverlayPhase !== "hidden" && !shaderTransitionLoading && !showCompositionOverlay;
 
     useEffect(() => {
       onCompositionLoadingChange?.(showCompositionOverlay || showAssetOverlay);
@@ -365,8 +360,8 @@ export const Player = forwardRef<HTMLIFrameElement, PlayerProps>(
             data-hyperframes-ignore=""
             draggable={false}
             style={{
-              opacity: assetOverlayFading ? 0 : 1,
-              pointerEvents: assetOverlayFading ? "none" : "auto",
+              opacity: assetOverlayPhase === "fading" ? 0 : 1,
+              pointerEvents: assetOverlayPhase === "fading" ? "none" : "auto",
               transition: "opacity 240ms ease-out",
             }}
             onDragStart={(event) => event.preventDefault()}

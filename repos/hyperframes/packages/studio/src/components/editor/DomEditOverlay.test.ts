@@ -20,7 +20,7 @@ import type { DomEditSelection } from "./domEditing";
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("./useDomEditOverlayGestures", () => ({
-  createDomEditOverlayGestureHandlers: () => ({
+  useDomEditOverlayGestureHandlers: () => ({
     startGesture: () => true,
     startGroupDrag: () => {},
     onPointerMove: () => {},
@@ -137,7 +137,9 @@ describe("DomEditOverlay", () => {
 
     function Harness() {
       const [selected, setSelected] = React.useState<DomEditSelection | null>(null);
-      currentSelection = selected;
+      React.useLayoutEffect(() => {
+        currentSelection = selected;
+      }, [selected]);
 
       return React.createElement(DomEditOverlay, {
         iframeRef,

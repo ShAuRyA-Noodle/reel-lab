@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { TimelineElement } from "../player";
 import { usePlayerStore } from "../player";
 import type { DomEditSelection } from "../components/editor/domEditing";
@@ -78,7 +78,9 @@ export function useClipboard({
 }: UseClipboardOptions) {
   const clipboardRef = useRef<ClipboardPayload | null>(null);
   const projectIdRef = useRef(projectId);
-  projectIdRef.current = projectId;
+  useEffect(() => {
+    projectIdRef.current = projectId;
+  }, [projectId]);
 
   const handleCopy = useCallback((): boolean => {
     const { selectedElementId, elements } = usePlayerStore.getState();

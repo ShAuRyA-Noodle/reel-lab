@@ -38,9 +38,14 @@ jobs:
         run: bun audit --audit-level=moderate
       - run: bun run build
       - run: bun run --filter '*' typecheck
+      - run: bun run lint
+      - run: bun run --filter @hyperframes/core test
+      - run: bun run --filter @hyperframes/engine test
       - run: bun run --filter @hyperframes/player test
       - run: bun run --filter @hyperframes/cli test
       - run: bun run --filter @hyperframes/studio test
+      - run: bun run --filter @hyperframes/shader-transitions test
+      - run: bun run --filter @hyperframes/aws-lambda test
       - name: Render H.264 smoke fixture
         run: |
           sudo apt-get update

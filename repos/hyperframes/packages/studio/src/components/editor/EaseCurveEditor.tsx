@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type PointerEvent } from "react";
+import { useState, useRef, type PointerEvent } from "react";
 import { RotateCcw } from "../../icons/SystemIcons";
 import {
   clampStudioCustomEasePoints,
@@ -46,11 +46,17 @@ export function EaseCurveEditor({
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [draft, setDraft] = useState(points);
+  const [externalPoints, setExternalPoints] = useState(points);
   const draggingRef = useRef<"p1" | "p2" | null>(null);
-
-  useEffect(() => {
+  if (
+    externalPoints.x1 !== points.x1 ||
+    externalPoints.y1 !== points.y1 ||
+    externalPoints.x2 !== points.x2 ||
+    externalPoints.y2 !== points.y2
+  ) {
+    setExternalPoints(points);
     setDraft(points);
-  }, [points]);
+  }
 
   const width = 324;
   const height = 214;

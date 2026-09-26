@@ -117,7 +117,7 @@ export function useTimelinePlayhead({
   );
 
   const autoScrollDuringDrag = useCallback(
-    (clientX: number) => {
+    function autoScrollDuringDrag(clientX: number) {
       cancelAnimationFrame(dragScrollRaf.current);
       const el = scrollRef.current;
       if (
