@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   hyperframes:
-    name: Moderate+ audit, lint, build and unit tests
+    name: Audit, lint, build and unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
@@ -36,8 +36,8 @@ jobs:
         with:
           node-version: "22"
       - run: bun install --frozen-lockfile
-      - name: Audit moderate and higher findings
-        run: bun audit --audit-level=moderate
+      - name: Audit all findings
+        run: bun audit
       - run: bun run build
       - run: bun run --filter '*' typecheck
       - run: bun run lint
