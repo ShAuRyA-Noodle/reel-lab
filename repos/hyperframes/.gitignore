@@ -41,6 +41,8 @@ packages/player/tests/perf/results/
 # Rendered output (not test fixtures — those use git LFS)
 output/
 renders/
+!packages/studio/src/components/renders/
+!packages/studio/src/components/renders/**
 !packages/producer/tests/*/output/
 !packages/producer/tests/distributed/*/output/
 
