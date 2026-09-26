@@ -1040,7 +1040,9 @@ async function runTestSuite(
       }
       visualPassed = failedFrames <= suite.meta.maxFrameFailures;
     } else {
-      // Visual comparison (100 frames, 1 per 1% of video duration)
+      // Visual comparison (100 frames, 1 per 1% of video duration).
+      // Use the center of each interval so a checkpoint cannot land exactly
+      // on a scene cut, where small timing differences can pick either scene.
       logPretty("Comparing visual quality (100 checkpoints)...", "🔍");
       const videoMetadata = await extractMediaMetadata(renderedOutputPath);
       const snapshotMetadata = await extractMediaMetadata(snapshotVideoPath);
@@ -1057,7 +1059,7 @@ async function runTestSuite(
 
       const minPsnrForMode = resolveMinPsnrForMode(options.mode, suite.meta.minPsnr);
       for (let i = 0; i < 100; i++) {
-        const time = (videoDuration * i) / 100;
+        const time = (videoDuration * (i + 0.5)) / 100;
         const psnr = psnrAtCheckpoint(
           renderedOutputPath,
           snapshotVideoPath,
