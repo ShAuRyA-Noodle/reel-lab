@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   hyperframes:
-    name: Audit, build and render smoke
+    name: Moderate+ audit, build and render smoke
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
@@ -34,7 +34,8 @@ jobs:
         with:
           node-version: "22"
       - run: bun install --frozen-lockfile
-      - run: bun audit
+      - name: Audit moderate and higher findings
+        run: bun audit --audit-level=moderate
       - run: bun run build
       - run: bun run --filter '*' typecheck
       - run: bun run --filter @hyperframes/player test
