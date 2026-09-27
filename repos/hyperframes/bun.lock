@@ -29,7 +29,7 @@
         "@aws-sdk/client-s3": "^3.1138.0",
         "@aws-sdk/client-sfn": "^3.1138.0",
         "@hyperframes/producer": "workspace:^",
-        "@sparticuz/chromium": "148.0.0",
+        "@sparticuz/chromium": "153.0.0",
         "ffmpeg-static": "^5.2.0",
         "ffprobe-static": "^3.1.0",
         "puppeteer-core": "^25.12.0",
@@ -902,7 +902,7 @@
 
     "@smithy/types": ["@smithy/types@4.19.0", "", { "dependencies": { "tslib": "^2.6.2" } }, "sha512-r7jh49VJxGerfAcTQA6gXcKc+98zOp/tqRwzYjgOE+iSQsP6cEU1hq2QzbuipmP68QtYdY9wKEhiCQZIzHgZ4Q=="],
 
-    "@sparticuz/chromium": ["@sparticuz/chromium@148.0.0", "", { "dependencies": { "tar-fs": "^3.1.2" } }, "sha512-na5beDSZkrlcEWEMt+eHu4Xe+MLUgCtHBjHaXGsNaQu5tJWwXE+McxAcMtyumEM/JzXrxGpkO5vAPD9TWhil3g=="],
+    "@sparticuz/chromium": ["@sparticuz/chromium@153.0.0", "", { "dependencies": { "tar-fs": "^3.1.2" } }, "sha512-jiGWqSvPMdu4+P9TilYqAR7yEGPEHINx+lCvE/NqNO/EHYzF/x1hUiI5T6ioVIt7dEy7n88byyT0vk+dnsgQwA=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
