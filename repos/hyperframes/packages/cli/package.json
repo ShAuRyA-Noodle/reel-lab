@@ -24,21 +24,21 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
+    "@hono/node-server": "^2.1.4",
     "@puppeteer/browsers": "^3.2.3",
     "adm-zip": "^0.6.1",
     "citty": "^0.2.1",
     "compare-versions": "^6.1.1",
     "esbuild": "^0.28.2",
     "giget": "^3.3.1",
-    "hono": "^4.0.0",
+    "hono": "^4.13.13",
     "mime-types": "^3.0.2",
     "onnxruntime-node": "^1.30.0",
     "open": "^10.0.0",
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.29",
     "prettier": "^3.9.9",
-    "puppeteer-core": "^25.12.0",
-    "sharp": "^0.35.4"
+    "puppeteer-core": "^25.13.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@clack/prompts": "^1.8.1",
@@ -51,7 +51,7 @@
     "@types/node": "^25.0.10",
     "linkedom": "^0.18.13",
     "picocolors": "^1.1.1",
-    "tsup": "8.5.0",
+    "tsup": "8.5.1",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^4.1.11"
